@@ -1,0 +1,639 @@
+---
+title: "Mice Protein Data - Ahmed et al."
+author: "Philippe Boileau"
+date: "14/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(here)
+library(tidyverse)
+library(devtools)
+library(scPCA)
+library(elasticnet)
+library(Rtsne)
+library(umap)
+library(ggpubr)
+library(naniar)
+library(SingleCellExperiment)
+library(cluster)
+
+knitr::opts_chunk$set(echo = FALSE)
+set.seed(734576345)
+```
+
+
+```{r mice_data_prep, message = FALSE}
+# load the data
+mice_df <- read_csv(here("analyses", "mice_data", "Data_Cortex_Nuclear.csv"))
+
+# split into target and background
+target_df <- mice_df %>%
+  dplyr::filter(Treatment == "Saline",
+                Behavior == "S/C",
+                Genotype == "Control" || Genotype == "Ts65Dn") %>%
+  select(-Genotype, -Behavior, -Treatment, -MouseID) %>%
+  impute_median_if(is.numeric)
+background_df <- mice_df %>%
+  dplyr::filter(Treatment == "Saline",
+                Behavior == "C/S",
+                Genotype == "Control") %>%
+  select(-Genotype, -Behavior, -Treatment, -MouseID, -class) %>%
+  impute_median_all
+```
+
+
+### PCA
+
+```{r mice_pca}
+# perform PCA
+pca_mice <- prcomp(target_df[, 1:77], center = TRUE, scale = TRUE)
+
+# compute the average silhouette widths
+group_mem <- if_else(as.data.frame(target_df[, 78]) == "c-SC-s", 1, 2)
+pca_group_sil <- silhouette(group_mem, dist(pca_mice$x))
+
+# plot the 2D rep using first 2 components
+df <- data.frame(
+  PC1 = pca_mice$x[, 1],
+  PC2 = pca_mice$x[, 2],
+  class = target_df$class
+  ) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+      
+p_pca <- ggplot(df, aes(x = PC1, y = PC2, colour = class)) +
+  ggtitle("PCA") +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+p_pca
+```
+
+
+### cPCA
+
+```{r cPCA_mice}
+# run cPCA for using 40 logarithmically seperated contrastive param values
+cpca_mice <- scPCA(target = target_df[, 1:77],
+                   background = background_df,
+                   penalties = 0,
+                   n_centers = 2,
+                   scale = TRUE,
+                   max_iter = 1000)
+
+# compute the average silhouette widths
+cpca_group_sil <- silhouette(group_mem, dist(cpca_mice$x))
+
+# create a dataframe to be plotted
+cpca_df <- cpca_mice$x %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(cpca_df) <- c("cPC1", "cPC2", "label")
+
+# plot the results
+p_cpca <- ggplot(cpca_df, aes(x = -cPC1, y = -cPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("cPCA") +
+  xlab("cPC1") +
+  ylab("cPC2") +
+  theme_minimal()
+p_cpca
+
+
+# run the code for 2-5 centers
+cpca_diff_centers <- lapply(
+  2:5,
+  function(x){
+    scPCA(target = target_df[, 1:77], background = background_df, penalties = 0,
+          n_centers = x, scale = TRUE, max_iter = 1000)
+  })
+```
+
+
+```{r cpca_diff_centers}
+# this is done one-by-one to ensure the plots' axes are comparable
+
+# two centers:
+cpca_2_group_sil <- silhouette(group_mem, dist(cpca_diff_centers[[1]]$x))
+cpca_2_df <- cpca_diff_centers[[1]]$x %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(cpca_2_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(cpca_2_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(cpca_2_df) <- c("cPC1", "cPC2", "label")
+
+# plot the results
+p_cpca_2 <- ggplot(cpca_2_df, aes(x = -cPC1, y = -cPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("Two Centers") +
+  xlab("cPC1") +
+  ylab("cPC2") +
+  theme_minimal()
+
+# three centers:
+cpca_3_group_sil <- silhouette(group_mem, dist(cpca_diff_centers[[2]]$x))
+cpca_3_df <- cpca_diff_centers[[2]]$x %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(cpca_3_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(cpca_3_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(cpca_3_df) <- c("cPC1", "cPC2", "label")
+
+# plot the results
+p_cpca_3 <- ggplot(cpca_3_df, aes(x = cPC1, y = cPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("Three Centers") +
+  xlab("cPC1") +
+  ylab("cPC2") +
+  theme_minimal()
+
+# four centers:
+cpca_4_group_sil <- silhouette(group_mem, dist(cpca_diff_centers[[3]]$x))
+cpca_4_df <- cpca_diff_centers[[3]]$x %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(cpca_4_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(cpca_4_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(cpca_4_df) <- c("cPC1", "cPC2", "label")
+
+# plot the results
+p_cpca_4 <- ggplot(cpca_4_df, aes(x = cPC1, y = cPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("Four Centers") +
+  xlab("cPC1") +
+  ylab("cPC2") +
+  theme_minimal()
+
+# five centers:
+cpca_5_group_sil <- silhouette(group_mem, dist(cpca_diff_centers[[4]]$x))
+cpca_5_df <- cpca_diff_centers[[4]]$x %>%
+as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(cpca_5_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(cpca_5_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(cpca_5_df) <- c("cPC1", "cPC2", "label")
+
+# plot the results
+p_cpca_5 <- ggplot(cpca_5_df, aes(x = cPC1, y = -cPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("Five Centers") +
+  xlab("cPC1") +
+  ylab("cPC2") +
+  theme_minimal()
+
+# combine the 4 plots
+ggarrange(p_cpca_2, p_cpca_3, p_cpca_4, p_cpca_5,
+          ncol = 2, nrow = 2)
+```
+
+
+### scPCA
+
+```{r scPCA_mice, cache=TRUE}
+# run scPCA for using 40 logarithmically seperated contrastive parameter values
+# and possible 20 L1 penalty terms
+scpca_mice <- scPCA(target = target_df[, 1:77],
+                    background = background_df,
+                    n_centers = 2,
+                    scale = TRUE,
+                    max_iter = 1000)
+
+
+# compute the average silhouette widths
+scpca_group_sil <- silhouette(group_mem, dist(scpca_mice$x))
+
+# create a dataframe to be plotted
+scpca_df <- scpca_mice$x %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(scpca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(scpca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(scpca_df) <- c("scPC1", "scPC2", "label")
+
+# plot the results
+p_scpca <- ggplot(scpca_df, aes(x = -scPC1, y = scPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("scPCA") +
+  xlab("scPC1") +
+  ylab("scPC2") +
+  theme_minimal()
+p_scpca
+
+# run the code for 2-5 centers
+scpca_diff_centers <- lapply(
+  2:5,
+  function(x){
+    scPCA(target = target_df[, 1:77], background = background_df,
+          n_centers = x, scale = TRUE, max_iter = 1000)
+  })
+```
+
+```{r rscpca_diff_centers}
+# this is done one-by-one to ensure the plots' axes are comparable
+
+# two centers:
+scpca_2_group_sil <- silhouette(group_mem, dist(scpca_diff_centers[[1]]$x))
+scpca_2_df <- scpca_diff_centers[[1]]$x %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(scpca_2_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(scpca_2_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(scpca_2_df) <- c("scPC1", "scPC2", "label")
+
+p_scpca_2 <- ggplot(scpca_2_df, aes(x = -scPC1, y = scPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("Two Centers") +
+  xlab("scPC1") +
+  ylab("scPC2") +
+  theme_minimal()
+
+# three centers:
+scpca_3_group_sil <- silhouette(group_mem, dist(scpca_diff_centers[[2]]$x))
+scpca_3_df <- scpca_diff_centers[[2]]$x %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(scpca_3_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(scpca_3_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(scpca_3_df) <- c("scPC1", "scPC2", "label")
+
+p_scpca_3 <- ggplot(scpca_3_df, aes(x = -scPC1, y = scPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("Three Centers") +
+  xlab("scPC1") +
+  ylab("scPC2") +
+  theme_minimal()
+
+# four centers:
+scpca_4_group_sil <- silhouette(group_mem, dist(scpca_diff_centers[[3]]$x))
+scpca_4_df <- scpca_diff_centers[[3]]$x %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(scpca_4_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(scpca_4_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(scpca_4_df) <- c("scPC1", "scPC2", "label")
+
+p_scpca_4 <- ggplot(scpca_4_df, aes(x = -scPC1, y = scPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("Four Centers") +
+  xlab("scPC1") +
+  ylab("scPC2") +
+  theme_minimal()
+
+# five centers:
+scpca_5_group_sil <- silhouette(group_mem, dist(scpca_diff_centers[[4]]$x))
+scpca_5_df <- scpca_diff_centers[[4]]$x %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(scpca_5_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(scpca_5_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(scpca_5_df) <- c("scPC1", "scPC2", "label")
+
+p_scpca_5 <- ggplot(scpca_5_df, aes(x = -scPC1, y = -scPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("Five Centers") +
+  xlab("scPC1") +
+  ylab("scPC2") +
+  theme_minimal()
+
+# combine the 4 plots
+ggarrange(p_scpca_2, p_scpca_3, p_scpca_4, p_scpca_5,
+          ncol = 2, nrow = 2)
+```
+
+
+### Comparison of cPCA and scPCA Loadings
+
+```{r loadings_comp}
+# compute the relative absolute loading ratios
+cpca_loads_df <- cpca_mice$rotation %>%
+  as.data.frame() %>%
+  dplyr::mutate(
+    V1 = abs(V1),
+    V2 = abs(V2),
+    V1 = (V1-min(V1))/(max(V1)-min(V1)),
+    V2 = (V2-min(V2))/(max(V2)-min(V2))
+  )
+scpca_loads_df <- scpca_mice$rotation %>%
+  as.data.frame() %>%
+  dplyr::mutate(
+    V1 = abs(V1),
+    V2 = abs(V2),
+    V1 = (V1-min(V1))/(max(V1)-min(V1)),
+    V2 = (V2-min(V2))/(max(V2)-min(V2))
+  )
+
+# create the loadings comparison plot
+load_diff_df <- bind_rows(
+  cpca_loads_df,
+  scpca_loads_df
+) %>%
+  dplyr::mutate(
+    sparse = c(rep("0", ncol(target_df[, 1:77])),
+               rep("1", ncol(target_df[, 1:77]))),
+    sparse = factor(sparse, labels = c("cPCA", "scPCA")),
+    prot = rep(1:ncol(target_df[, 1:77]), 2)
+  )
+
+colnames(load_diff_df) <- c("comp1", "comp2", "sparse", "prot")
+
+# order the genes based on decreasing rel abs cpca loadings
+ord_1_prot <- factor(load_diff_df$prot,
+                     levels = sort(load_diff_df$comp1[1:ncol(target_df[, 1:77])],
+                                   decreasing = TRUE, index.return = TRUE)$ix)
+ord_2_prot <- factor(load_diff_df$prot,
+                     levels = sort(load_diff_df$comp2[1:ncol(target_df[, 1:77])],
+                                   decreasing = TRUE, index.return = TRUE)$ix)
+load_diff_df <- load_diff_df %>%
+  dplyr::mutate(
+    prot1 = ord_1_prot,
+    prot2 = ord_2_prot
+  )
+
+p1 <- load_diff_df %>% 
+  ggplot(aes(y = comp1, x = prot1,
+             fill = sparse, alpha = sparse)) +
+    geom_bar(stat = "identity", position = position_identity()) +
+    xlab("Proteins") +
+    ylab("Relative Abs. Weight") +
+    ggtitle("First Loadings Vector Comparison") +
+    scale_fill_viridis_d(name = "Method",
+                         labels = c("cPCA", "scPCA"),
+                         begin = 0.9, end = 0.1) +
+    scale_alpha_discrete(range = c(0.5, 1),
+                         guide = FALSE) +
+    theme_minimal() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+p2 <- load_diff_df %>%
+  ggplot(aes(y = comp2, x = prot2,
+             fill = sparse, alpha = sparse)) +
+    geom_bar(stat = "identity", position = position_identity()) +
+    xlab("Proteins") +
+    ylab("Relative Abs. Weight") +
+    ggtitle("Second Loadings Vector Comparison") +
+    scale_fill_viridis_d(name = "Method",
+                         labels = c("cPCA", "scPCA"),
+                         begin = 0.9, end = 0.1) +
+    scale_alpha_discrete(range = c(0.5, 1),
+                         guide = FALSE) +
+    theme_minimal() +
+    theme(panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+loadings_comp <- annotate_figure(
+  ggarrange(p1, p2, nrow = 1, ncol = 2,
+            common.legend = TRUE, legend = "right")
+)
+```
+
+
+### T-SNE
+
+```{r t-sne_mice}
+# run the tsne algorithm with default 
+tsne_mice <- Rtsne(target_df[, 1:77], theta = 0, pca_scale = TRUE)
+
+# compute the average silhouette widths
+tsne_group_sil <- silhouette(group_mem, dist(tsne_mice$Y))
+
+# create the t-sne dataframe
+tsne_df <- tsne_mice$Y %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(tsne_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(tsne_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+colnames(tsne_df) <- c("tSNE1", "tSNE2", "label")
+
+# plot the result
+p_tsne <- ggplot(tsne_df, aes(x = tSNE1, y = tSNE2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("t-SNE") +
+  theme_minimal()
+p_tsne
+```
+
+### UMAP
+
+```{r umap_mice}
+# run the tsne algorithm with default 
+umap_mice <- umap(target_df[, 1:77])
+
+
+# compute the average silhouette widths
+umap_group_sil <- silhouette(group_mem, dist(umap_mice$layout))
+
+# create the t-sne dataframe
+umap_df <- umap_mice$layout %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(umap_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(umap_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(umap_df) <- c("UMAP1", "UMAP2", "label")
+
+# plot the results
+p_umap <- ggplot(umap_df, aes(x = UMAP1, y = UMAP2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("UMAP") +
+  theme_minimal()
+p_umap
+```
+
+### Combined Plot
+
+```{r result_mice}
+ggarrange(
+  ggarrange(p_pca, p_umap, p_cpca, p_scpca,
+            ncol = 2, nrow = 2),
+  loadings_comp,
+  nrow = 2,
+  labels = "AUTO",
+  heights = c(2, 1)
+)
+```
