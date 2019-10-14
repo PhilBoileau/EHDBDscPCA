@@ -627,7 +627,7 @@ p_umap
 
 ### Combined Plot
 
-```{r result_mice}
+```{r result_mice, fig.retina=3, fig.height=8, fig.width=8}
 ggarrange(
   ggarrange(p_pca, p_umap, p_cpca, p_scpca,
             ncol = 2, nrow = 2),
