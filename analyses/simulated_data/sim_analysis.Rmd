@@ -1,0 +1,687 @@
+---
+title: "Simulate scRNA-seq Data"
+author: "Philippe Boileau"
+date: "7/31/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(here)
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(scPCA)
+library(Rtsne)
+library(umap)
+library(ggpubr)
+library(SingleCellExperiment)
+library(splatter)
+library(scater)
+library(zinbwave)
+library(cluster)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Simulate the Data
+
+Single cell RNA-seq data is simulated to represent a situation in which
+2 groups of cells generated through some experimental procedure are found to
+have heterogenous expression in a number of genes. Both groups also possess
+genes that are differentially expressed compared to those of a group of control
+cells.
+
+We will show that the two groups of cells subjected to the experimental
+procedure are indistinguishable when subjected to dimension reduction techniques
+that do not take into account the information stored in the control cells.
+
+```{r generate_data, message=FALSE, warning=FALSE, echo=TRUE}
+# simulate the three groups of cells such that cell heterogeneity is masked by
+# some batch effect
+params <- newSplatParams(
+  seed = 6757293,
+  nGenes = 500,
+  batchCells = c(150, 150),
+  batch.facLoc = c(0.05, 0.05),
+  batch.facScale = c(0.05, 0.05),
+  group.prob = rep(1/3, 3),
+  de.prob = c(0.1, 0.05, 0.1),
+  de.downProb = c(0.1, 0.05, 0.1),
+  de.facLoc = rep(0.2, 3),
+  de.facScale = rep(0.2, 3)
+)
+sim_groups_sce <- splatSimulate(params, method = "groups")
+
+# get the logcounts of the data
+sim_groups_sce <- normalize(sim_groups_sce)
+
+# remove all cells without variation in counts
+sim_groups_sce <- sim_groups_sce[which(rowVars(counts(sim_groups_sce)) != 0), ]
+```
+
+## PCA of All Cells
+
+We take the first two principal components of the entire dataset to illustrate
+that the variance caused by the batch effect dominates all other signals in
+the data.
+
+```{r show_batch_effect, warning=FALSE, message=FALSE}
+full_data_p <- plotPCA(sim_groups_sce, shape_by = "Batch", colour_by = "Group") +
+  ggtitle("PCA of Complete Simulated Data") +
+  scale_colour_viridis_d(name = "Group",
+                         begin = 0.1, end = 0.9,
+                         labels = c("Target 1", "Control", "Target 2")) +
+  xlab("PC1: 3% Variance") +
+  ylab("PC2: 2% Variance") +
+  theme_minimal()
+full_data_p
+```
+
+# Applying Dim. Red. Techniques to Target Data
+
+Now, we focus on applying variuos dimension reduction techniques to the target
+data, i.e. the cells that were subjected to some experimental procedure. The
+transcriptome data belonging to the control cells is used as a background
+dataset for cPCA and scPCA.
+
+```{r prep_target_background}
+# get the logcount matrices
+tg <- t(logcounts(sim_groups_sce)[, which(sim_groups_sce$Group != "Group2")])
+bg <- t(logcounts(sim_groups_sce)[, which(sim_groups_sce$Group == "Group2")])
+
+# get the batch and group labels
+target_batch <- sim_groups_sce$Batch[which(sim_groups_sce$Group != "Group2")]
+target_group <- sim_groups_sce$Group[which(sim_groups_sce$Group != "Group2")]
+```
+
+
+## PCA
+
+```{r pca}
+# perform PCA
+target_pca <- prcomp(tg, center = TRUE, scale. = TRUE)
+
+# get the silhouette width of the batch and biological groups
+batch_mem <- if_else(target_batch == "Batch1", 1, 2)
+group_mem <- if_else(target_group == "Group1", 1, 2)
+pca_batch_sil <- silhouette(batch_mem, dist(target_pca$x))
+pca_group_sil <- silhouette(group_mem, dist(target_pca$x))
+
+# plot the 2D representation
+pca_df <- data.frame(
+  PC1 = target_pca$x[, 1],
+  PC2 = target_pca$x[, 2],
+  group = target_group,
+  batch = target_batch
+) %>%
+  dplyr::mutate(
+    batch = if_else(
+      batch == "Batch1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(pca_batch_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(pca_batch_sil)$clus.avg.widths[2], 3)),
+             ")")),
+    group = if_else(
+      group == "Group1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[2], 3)),
+                     ")"))
+    )
+
+pca_p <- pca_df %>%
+  ggplot(aes(x = PC1, y = PC2, colour = group, shape = batch)) +
+  geom_point() +
+  ggtitle("PCA") +
+  scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                         begin = 0.1, end = 0.9) +
+  scale_shape_discrete(name = paste("Batch (Ave. S.W.)")) +
+  guides(shape = guide_legend(override.aes = list(size = 1),
+                                    order = 1),
+               colour = guide_legend(override.aes = list(size = 1),
+                                     order = 2)) +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), 
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.5, "lines"),
+        legend.position = "right")
+pca_p
+```
+
+
+## cPCA
+
+```{r cpca}
+set.seed(1436262)
+
+# perform cpca
+sim_cpca <- scPCA(tg, bg, center = TRUE, scale = TRUE, penalties = 0,
+                  n_centers = 2)
+
+# get silhouette widths
+cpca_batch_sil <- silhouette(batch_mem, dist(sim_cpca$x))
+cpca_group_sil <- silhouette(group_mem, dist(sim_cpca$x))
+
+# plot the 2D representation
+cpca_df <- data.frame(
+  cPC1 = sim_cpca$x[, 1],
+  cPC2 = sim_cpca$x[, 2],
+  group = target_group,
+  batch = target_batch
+) %>%
+  dplyr::mutate(
+    batch = if_else(
+      batch == "Batch1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(cpca_batch_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(cpca_batch_sil)$clus.avg.widths[2], 3)),
+             ")")),
+    group = if_else(
+      group == "Group1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[2], 3)),
+             ")"))
+    )
+cpca_p <- cpca_df %>%
+  ggplot(aes(x = cPC1, y = cPC2, colour = group, shape = batch)) +
+  geom_point() +
+  ggtitle("cPCA") +
+  scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                         begin = 0.1, end = 0.9) +
+  scale_shape_discrete(name = "Batch (Ave. S.W.)") +
+  guides(shape = guide_legend(override.aes = list(size = 1),
+                                    order = 1),
+               colour = guide_legend(override.aes = list(size = 1),
+                                     order = 2)) +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), 
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.5, "lines"),
+        legend.position = "right")
+cpca_p
+```
+
+### Effect of Contrastive Parameter
+
+```{r traditional_cPCA, fig.retina=3, fig.width=8, fig.height=10}
+set.seed(235132)
+
+# perform traditional cPCA
+trad_cpca_sim <- scPCA(
+  tg, bg, center = TRUE, scale = TRUE, penalties = 0,
+  n_medoids = 8, n_centers = 1,
+  contrasts = exp(seq(log(1),log(100000), length.out = 40))
+)
+
+# plot all 8 medoids
+trad_cpca_plots <- lapply(
+  seq_len(8),
+  function(med) {
+    
+    # get silhouette widths
+  cpca_batch_sil <- silhouette(batch_mem, dist(trad_cpca_sim$x[[med]]))
+  cpca_group_sil <- silhouette(group_mem, dist(trad_cpca_sim$x[[med]]))
+    
+   data.frame(
+      cPC1 = trad_cpca_sim$x[[med]][, 1],
+      cPC2 = trad_cpca_sim$x[[med]][, 2],
+      group = target_group,
+      batch = target_batch
+    ) %>%
+    dplyr::mutate(
+      batch = if_else(
+        batch == "Batch1",
+        paste0("1 (",
+               sprintf("%.3f", round(summary(cpca_batch_sil)$clus.avg.widths[1], 3)),
+                       ")"),
+        paste0("2 (",
+               sprintf("%.3f", round(summary(cpca_batch_sil)$clus.avg.widths[2], 3)),
+               ")")),
+      group = if_else(
+        group == "Group1",
+        paste0("1 (",
+               sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[1], 3)),
+               ")"),
+        paste0("2 (",
+               sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[2], 3)),
+               ")"))
+      ) %>%
+      ggplot(aes(x = cPC1, y = cPC2, colour = group, shape = batch)) +
+        geom_point() +
+        ggtitle(paste0("Contrastive Parameter = ",
+                       round(trad_cpca_sim$contrast[med], 2))) +
+        scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                               begin = 0.1, end = 0.9) +
+        scale_shape_discrete(name = "Batch (Ave. S.W.)") +
+        guides(shape = guide_legend(override.aes = list(size = 1),
+                                    order = 1),
+               colour = guide_legend(override.aes = list(size = 1),
+                                     order = 2)) +
+        theme_minimal() +
+        theme(legend.title = element_text(size = 10), 
+              legend.text = element_text(size = 10),
+              legend.key.size = unit(0.5, "lines"),
+              legend.position = "right")
+  })
+
+# plot a single grid
+ggarrange(
+  trad_cpca_plots[[1]], trad_cpca_plots[[2]], trad_cpca_plots[[3]],
+  trad_cpca_plots[[4]], trad_cpca_plots[[5]], trad_cpca_plots[[6]],
+  trad_cpca_plots[[7]], trad_cpca_plots[[8]],
+  nrow = 4, ncol = 2
+  )
+```
+
+
+## scPCA
+
+```{r scpca, cache = TRUE}
+set.seed(6471012)
+
+# perform scpca
+# BiocParallel::register(SnowParam(workers = 2), default = TRUE)
+# sim_scpca <- scPCA(tg, bg, center = TRUE, scale = TRUE, n_centers = 2,
+#                    parallel = TRUE)
+# 
+# # save the file for later
+# write_rds(sim_scpca,
+#           path = here("analyses/simulations/scPCA_results/sim_scpca.rds"))
+sim_scpca <- read_rds(
+  path = here("analyses/simulated_data/sim_scpca.rds")
+)
+
+# get silhouette widths
+scpca_batch_sil <- silhouette(batch_mem, dist(sim_scpca$x))
+scpca_group_sil <- silhouette(group_mem, dist(sim_scpca$x))
+
+# plot the 2D representation
+scpca_df <- data.frame(
+  scPC1 = sim_scpca$x[, 1],
+  scPC2 = sim_scpca$x[, 2],
+  group = target_group,
+  batch = target_batch
+) %>%
+  dplyr::mutate(
+    batch = if_else(
+      batch == "Batch1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(scpca_batch_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(scpca_batch_sil)$clus.avg.widths[2], 3)),
+             ")")),
+    group = if_else(
+      group == "Group1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(scpca_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(scpca_group_sil)$clus.avg.widths[2], 3)),
+             ")"))
+    )
+scpca_p <- scpca_df %>%
+  ggplot(aes(x = scPC1, y = scPC2, colour = group, shape = batch)) +
+  geom_point() +
+  ggtitle("scPCA") +
+  scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                         begin = 0.1, end = 0.9) +
+  scale_shape_discrete(name = "Batch (Ave. S.W.)") +
+  guides(shape = guide_legend(override.aes = list(size = 1),
+                                    order = 1),
+               colour = guide_legend(override.aes = list(size = 1),
+                                     order = 2)) +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), 
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.5, "lines"),
+        legend.position = "right")
+scpca_p
+```
+
+## Comparison cPCA and scPCA Loadings Matrices
+
+```{r comparison, warning=FALSE}
+# create the loadings comparison plot
+abs_cpca_l1 <- abs(sim_cpca$rotation[, 1])
+abs_scpca_l1 <- abs(sim_scpca$rotation[, 1])
+load_diff_df <- c(
+  (abs_cpca_l1 - min(abs_cpca_l1)) / (max(abs_cpca_l1) - min(abs_cpca_l1)),
+  (abs_scpca_l1 - min(abs_scpca_l1)) / (max(abs_scpca_l1) - min(abs_scpca_l1))
+) %>%
+  as.data.frame() %>%
+  dplyr::mutate(
+    sparse = c(rep("0", ncol(tg)), rep("1", ncol(tg))),
+    gene = rep(1:ncol(tg), 2)
+  )
+
+colnames(load_diff_df) <- c("comp1", "sparse", "gene")
+
+# order the genes based on decreasing rel abs cpca loadings
+ord_genes <- factor(load_diff_df$gene,
+                    levels = sort(load_diff_df$comp1[1:ncol(tg)],
+                                  decreasing = TRUE, index.return = TRUE)$ix)
+load_diff_df <- load_diff_df %>%
+  dplyr::mutate(
+    ord_genes = ord_genes
+  )
+
+p1 <- load_diff_df %>%
+  ggplot(aes(y = comp1, x = ord_genes,
+             fill = sparse, alpha = sparse)) +
+  geom_bar(stat = "identity", position = position_identity()) +
+  xlab("Gene") +
+  ylab("Relative Abs. Weight") +
+  ggtitle("First Loadings Vector Comparison") +
+  scale_fill_viridis_d(name = "Method",
+                       labels = c("cPCA", "scPCA"),
+                       begin = 0.9, end = 0.1) +
+  scale_alpha_discrete(range = c(0.5, 1),
+                       guide = FALSE) +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+p1
+```
+
+
+```{r non_zero_loadings, warning=FALSE}
+# print the table of differentially expressed genes
+scpca_table <- sim_groups_sce %>% 
+  rowData() %>% 
+  as_tibble() %>% 
+  dplyr::filter((DEFacGroup1 != 1 | DEFacGroup3 != 1)) %>% 
+  dplyr::select(Gene, DEFacGroup1, DEFacGroup3) %>%
+  dplyr::mutate(
+    diff = DEFacGroup1 - DEFacGroup3,
+    diff = abs(diff),
+    scPCA1 = if_else(Gene %in% names(which(sim_scpca$rotation[, 1] != 0)), 1, 0)
+  )
+
+# table
+scpca_table %>%
+  dplyr::arrange(desc(diff)) %>%
+  kable() %>%
+  kable_styling()
+
+# plot
+scpca_table %>% 
+  dplyr::arrange(desc(diff)) %>%
+  dplyr::mutate(
+    Gene = 1:nrow(scpca_table)
+  ) %>% 
+  ggplot(aes(x = Gene, y = diff, fill = factor(scPCA1))) +
+    geom_bar(stat = "identity") +
+    ggtitle("Differential Expression Ranking of Simulated Genes") +
+    xlab("Simulated Genes") +
+    ylab("Diff. in DE Multiplicative Factor \n Between Target Groups") +
+    scale_fill_viridis_d(name = "Selected by scPCA",
+                         labels = c("0", "1"),
+                         begin = 0.1, end = 0.9) +
+    theme_minimal()
+```
+
+Of the `r nrow(scpca_table)` differentially expressed genes, scPCA identified
+the most prominent.  Of the `r length(which(sim_scpca$rotation[, 1] != 0))`
+genes with non-zero values in the first row of scPCA's loading matrix,
+`r sum(scpca_table$scPCA1)` corresponded to differentially expressed genes.
+
+## t-SNE
+
+```{r tsne}
+# get tsne representation
+sim_tsne <- Rtsne(scale(tg), theta = 0, pca = FALSE)
+
+# get silhouette widths
+tsne_batch_sil <- silhouette(batch_mem, dist(sim_tsne$Y[, 1:2]))
+tsne_group_sil <- silhouette(group_mem, dist(sim_tsne$Y[, 1:2]))
+
+# plot the first two axes
+tsne_df <- data.frame(
+  TSNE1 = sim_tsne$Y[, 1],
+  TSNE2 = sim_tsne$Y[, 2],
+  group = target_group,
+  batch = target_batch
+) %>%
+  dplyr::mutate(
+    batch = if_else(
+      batch == "Batch1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(tsne_batch_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(tsne_batch_sil)$clus.avg.widths[2], 3)),
+             ")")),
+    group = if_else(
+      group == "Group1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(tsne_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(tsne_group_sil)$clus.avg.widths[2], 3)),
+             ")"))
+    )
+
+tsne_p <- tsne_df %>%
+  ggplot(aes(x = TSNE1, y = TSNE2, colour = group, shape = batch)) +
+  geom_point() +
+  ggtitle("t-SNE") +
+  scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                         begin = 0.1, end = 0.9) +
+  scale_shape_discrete(name = "Batch (Ave. S.W.)") +
+  guides(shape = guide_legend(override.aes = list(size = 1),
+                                    order = 1),
+               colour = guide_legend(override.aes = list(size = 1),
+                                     order = 2)) +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), 
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.5, "lines"),
+        legend.position = "right")
+tsne_p
+```
+
+
+## UMAP
+
+```{r umap}
+# get the umap representation
+sim_umap <- umap(scale(tg))
+
+# get silhouette widths
+umap_batch_sil <- silhouette(batch_mem, dist(sim_umap$layout))
+umap_group_sil <- silhouette(group_mem, dist(sim_umap$layout))
+
+# plot the first two axes
+umap_df <- sim_umap$layout %>%
+  as.data.frame() %>%
+  dplyr::mutate(
+    group = target_group,
+    batch = target_batch,
+    batch = if_else(
+      batch == "Batch1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(umap_batch_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(umap_batch_sil)$clus.avg.widths[2], 3)),
+             ")")),
+    group = if_else(
+      group == "Group1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(umap_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(umap_group_sil)$clus.avg.widths[2], 3)),
+             ")"))
+    ) 
+colnames(umap_df) <- c("UMAP1", "UMAP2", "group", "batch")
+
+umap_p <- umap_df %>%
+  ggplot(aes(x = UMAP1, y = UMAP2, colour = group, shape = batch)) +
+  geom_point() +
+  ggtitle("UMAP") +
+  scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                         begin = 0.1, end = 0.9) +
+  scale_shape_discrete(name = "Batch (Ave. S.W.)") +
+  guides(shape = guide_legend(override.aes = list(size = 1),
+                                    order = 1),
+               colour = guide_legend(override.aes = list(size = 1),
+                                     order = 2)) +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), 
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.5, "lines"),
+        legend.position = "right")
+umap_p
+```
+
+
+## ZINB-WaVE
+
+```{r zinbwave, cache=TRUE, message=FALSE, warning=FALSE}
+# fit a zinbwave model with sample and gene-level design matrices as intercepts
+sim_zinbwave <- zinbwave(
+  sim_groups_sce[, which(sim_groups_sce$Group != "Group2")],
+  K = 2
+)
+
+# get silhouette widths
+zinb_batch_sil <- silhouette(batch_mem, dist(reducedDim(sim_zinbwave)[, 1:2]))
+zinb_group_sil <- silhouette(group_mem, dist(reducedDim(sim_zinbwave)[, 1:2]))
+
+# create a dataframe for plotting
+zinbwave_df <- data.frame(
+  ZW1 = -reducedDim(sim_zinbwave)[, 1],
+  ZW2 = -reducedDim(sim_zinbwave)[, 2],
+  group = target_group,
+  batch = target_batch
+)  %>%
+  dplyr::mutate(
+    batch = if_else(
+      batch == "Batch1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(zinb_batch_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(zinb_batch_sil)$clus.avg.widths[2], 3)),
+             ")")),
+    group = if_else(
+      group == "Group1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(zinb_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(zinb_group_sil)$clus.avg.widths[2], 3)),
+             ")"))
+    )
+
+zinbwave_p <- zinbwave_df %>%
+  ggplot(aes(x = ZW1, y = ZW2, colour = group, shape = batch)) +
+  geom_point() +
+  ggtitle("ZINB-WaVE, Unknown Batch Effect") +
+  scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                         begin = 0.1, end = 0.9) +
+  scale_shape_discrete(name = "Batch (Ave. S.W.)") +
+  guides(shape = guide_legend(override.aes = list(size = 1),
+                                    order = 1),
+               colour = guide_legend(override.aes = list(size = 1),
+                                     order = 2)) +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), 
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.5, "lines"),
+        legend.position = "right")
+zinbwave_p
+```
+
+```{r zinbwave_batch, cache=TRUE, message=FALSE, warning=FALSE}
+# fit a zinbwave model, taking into consideration batch effect
+sim_zinbwave_batch <- zinbwave(
+  sim_groups_sce[, which(sim_groups_sce$Group != "Group2")],
+  K = 2,
+  X = "~Batch"
+)
+
+zinb_batch_sil <- silhouette(batch_mem,
+                             dist(reducedDim(sim_zinbwave_batch)[, 1:2]))
+zinb_group_sil <- silhouette(group_mem,
+                             dist(reducedDim(sim_zinbwave_batch)[, 1:2]))
+
+
+# create a dataframe for plotting
+zinbwave_b_df <- data.frame(
+  ZW1_b = -reducedDim(sim_zinbwave_batch)[, 1],
+  ZW2_b = -reducedDim(sim_zinbwave_batch)[, 2],
+  group = target_group,
+  batch = target_batch
+) %>%
+  dplyr::mutate(
+    batch = if_else(
+      batch == "Batch1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(zinb_batch_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(zinb_batch_sil)$clus.avg.widths[2], 3)),
+             ")")),
+    group = if_else(
+      group == "Group1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(zinb_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(zinb_group_sil)$clus.avg.widths[2], 3)),
+             ")"))
+    )
+
+zinbwave_b_p <- zinbwave_b_df %>%
+  ggplot(aes(x = ZW1_b, y = ZW2_b, colour = group, shape = batch)) +
+  geom_point() +
+  xlab("ZW1") +
+  ylab("ZW2") +
+  ggtitle("ZINB-WaVE, Known Batch Effect") +
+  scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                         begin = 0.1, end = 0.9) +
+  scale_shape_discrete(name = "Batch (Ave. S.W.)") +
+  guides(shape = guide_legend(override.aes = list(size = 1),
+                                    order = 1),
+               colour = guide_legend(override.aes = list(size = 1),
+                                     order = 2)) +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), 
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.5, "lines"),
+        legend.position = "right")
+zinbwave_b_p
+```
+
+
+# Combined Plots
+
+```{r comb_plots, fig.retina=3, fig.width=8, fig.height=10}
+nested_plot <- ggarrange(
+      tsne_p, umap_p, cpca_p, scpca_p, zinbwave_p, zinbwave_b_p,
+      nrow = 3, ncol = 2
+  )
+ggarrange(
+    full_data_p, 
+    nested_plot,
+    p1,
+    nrow = 3,
+    labels = "AUTO",
+    heights = c(1, 3, 1)
+)
+```
