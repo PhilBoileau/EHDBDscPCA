@@ -1,6 +1,5 @@
 ---
 title: "Mice Protein Data - Ahmed et al."
-author: "Philippe Boileau"
 date: "14/10/2019"
 output: html_document
 ---
@@ -327,7 +326,7 @@ scpca_diff_centers <- lapply(
   })
 ```
 
-```{r rscpca_diff_centers}
+```{r scpca_diff_centers}
 # this is done one-by-one to ensure the plots' axes are comparable
 
 # two centers:
@@ -458,7 +457,7 @@ ggarrange(p_scpca_2, p_scpca_3, p_scpca_4, p_scpca_5,
 
 ### Comparison of cPCA and scPCA Loadings
 
-```{r loadings_comp}
+```{r loadings_comp, warning=FALSE}
 # compute the relative absolute loading ratios
 cpca_loads_df <- cpca_mice$rotation %>%
   as.data.frame() %>%
@@ -544,6 +543,7 @@ loadings_comp <- annotate_figure(
   ggarrange(p1, p2, nrow = 1, ncol = 2,
             common.legend = TRUE, legend = "right")
 )
+loadings_comp
 ```
 
 
