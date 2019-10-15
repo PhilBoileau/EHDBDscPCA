@@ -1,0 +1,108 @@
+
+R version 3.6.1 (2019-07-05) -- "Action of the Toes"
+Copyright (C) 2019 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> # File for running scPCA on dengue data
+> library(GEOquery)
+Loading required package: Biobase
+Loading required package: BiocGenerics
+Loading required package: parallel
+
+Attaching package: ‘BiocGenerics’
+
+The following objects are masked from ‘package:parallel’:
+
+    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
+    clusterExport, clusterMap, parApply, parCapply, parLapply,
+    parLapplyLB, parRapply, parSapply, parSapplyLB
+
+The following objects are masked from ‘package:stats’:
+
+    IQR, mad, sd, var, xtabs
+
+The following objects are masked from ‘package:base’:
+
+    anyDuplicated, append, as.data.frame, basename, cbind, colnames,
+    dirname, do.call, duplicated, eval, evalq, Filter, Find, get, grep,
+    grepl, intersect, is.unsorted, lapply, Map, mapply, match, mget,
+    order, paste, pmax, pmax.int, pmin, pmin.int, Position, rank,
+    rbind, Reduce, rownames, sapply, setdiff, sort, table, tapply,
+    union, unique, unsplit, which, which.max, which.min
+
+Welcome to Bioconductor
+
+    Vignettes contain introductory material; view with
+    'browseVignettes()'. To cite Bioconductor, see
+    'citation("Biobase")', and for packages 'citation("pkgname")'.
+
+Setting options('download.file.method.GEOquery'='auto')
+Setting options('GEOquery.inmemory.gpl'=FALSE)
+> library(genefilter)
+> library(scPCA)
+> library(future)
+> 
+> plan(multiprocess, workers = 32)
+> 
+> set.seed(871234)
+> 
+> # load the data, already log2 transformed
+> ges <- getGEO("GSE51808")$GSE51808_series_matrix.txt.gz
+Found 1 file(s)
+GSE51808_series_matrix.txt.gz
+trying URL 'https://ftp.ncbi.nlm.nih.gov/geo/series/GSE51nnn/GSE51808/matrix/GSE51808_series_matrix.txt.gz'
+Content type 'application/x-gzip' length 10466423 bytes (10.0 MB)
+==================================================
+downloaded 10.0 MB
+
+Parsed with column specification:
+cols(
+  .default = col_double(),
+  ID_REF = col_character()
+)
+See spec(...) for full column specifications.
+File stored at: 
+/tmp/RtmpbfPlkk/GPL13158.soft
+Warning: 102 parsing failures.
+  row     col           expected    actual         file
+54614 SPOT_ID 1/0/T/F/TRUE/FALSE --Control literal data
+54615 SPOT_ID 1/0/T/F/TRUE/FALSE --Control literal data
+54616 SPOT_ID 1/0/T/F/TRUE/FALSE --Control literal data
+54617 SPOT_ID 1/0/T/F/TRUE/FALSE --Control literal data
+54618 SPOT_ID 1/0/T/F/TRUE/FALSE --Control literal data
+..... ....... .................. ......... ............
+See problems(...) for more details.
+
+> 
+> # keep the 50% most variable genes
+> var_filt_ges <- varFilter(ges, var.cutoff = 1-500/nrow(exprs(ges)))
+> 
+> # extract the target and background datasets
+> control_label <- which(var_filt_ges$`status:ch1` == "control")
+> target <- t(exprs(var_filt_ges)[, -control_label])
+> background <- t(exprs(var_filt_ges)[, control_label])
+> 
+> # get the target data labels
+> dengue_class <- var_filt_ges$`status:ch1`[-control_label]
+> 
+> # repeat scPCA for n_centers = 2,3,4,5
+> diff_centers_scpca <- lapply(2:5, function(x) {
++   
++   # fit scPCA for different number of centers
++   scPCA(target, background, center = TRUE, n_centers = x, parallel = TRUE)
++   
++ })
