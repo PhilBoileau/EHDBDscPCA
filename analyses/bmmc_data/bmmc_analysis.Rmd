@@ -1,0 +1,710 @@
+---
+title: "Bone Marrow Mononuclear Cells - Zheng et al."
+author: "Philippe Boileau"
+date: "15/10/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(here)
+library(tidyverse)
+library(scPCA)
+library(Rtsne)
+library(umap)
+library(ggpubr)
+library(SingleCellExperiment)
+library(cluster)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Data
+
+scRNA-seq data was captured from the bone marrow mononuclear cells of two
+patients with leukemia before and after undergoing a hematopoietic stem cell
+transplant. We subjected the cells from each patient to various dimensionality
+reduction techniques to determine whether they are capable of distinguishing the
+treatment states of the cells. scRNA-seq data from two healthy controls are used
+to perform cPCA and scPCA.
+
+```{r load_data, message=FALSE, warning=FALSE}
+# load the data
+source(file = here("analyses/bmmc_data/helpers/load_count_data.R"))
+
+# retain genes that contain 5 or more non-zero counts accross all cells
+sce <- sce[(Matrix::rowSums(counts(sce) != 0) > 4), ]
+
+# retain 1000 most variable genes
+vars <- rowVars(as.matrix(log1p(counts(sce))))
+names(vars) <- rownames(sce)
+vars <- sort(vars, decreasing = TRUE)
+core <- sce[names(vars)[1:1000], ]
+
+# split into target and background datasets
+background_sce <- core[, which(core$cell_prov %in% c("healthy_1", "healthy_2"))]
+target_sce <- core[, which(!(core$cell_prov %in% c("healthy_1", "healthy_2")))]
+patient_027_sce <- core[, which(core$cell_prov %in%
+                                  c("pre_trans_027", "post_trans_027"))]
+patient_035_sce <- core[, which(core$cell_prov %in%
+                                  c("pre_trans_035", "post_trans_035"))]
+
+background <- t(counts(background_sce))
+target <- t(counts(target_sce))
+patient_027 <- t(counts(patient_027_sce))
+patient_035 <- t(counts(patient_035_sce))
+
+# get the classes
+bmmc_class <- target_sce$cell_prov %>% factor
+pat027_class <- patient_027_sce$cell_prov %>% factor
+pat035_class <- patient_035_sce$cell_prov %>% factor
+```
+
+
+# AML027
+
+## PCA
+
+```{r pca_pat027}
+# perform PCA
+bmmc_pca <- prcomp(patient_027, center = TRUE, scale. = TRUE)
+
+# compute the average silhouette widths
+group_mem <- if_else(pat027_class == "pre_trans_027", 1, 2)
+pca_group_sil <- silhouette(group_mem, dist(bmmc_pca$x))
+
+# plot the 2D representation
+pca_df <- data.frame(
+  PC1 = bmmc_pca$x[, 1],
+  PC2 = bmmc_pca$x[, 2],
+  class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_027",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+pca_p <- pca_df %>%
+  ggplot(aes(x = PC1, y = PC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("PCA") +
+  scale_colour_viridis_d(name = "AML027",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+pca_p
+```
+
+
+## cPCA
+
+```{r cpca_pat027}
+set.seed(1436262)
+
+# perform cpca
+bmmc_cpca <- scPCA(as.matrix(patient_027), as.matrix(background), center = TRUE,
+                   scale = TRUE, penalties = 0, n_centers = 2, max_iter = 1000)
+
+# compute the average silhouette widths
+cpca_group_sil <- silhouette(group_mem, dist(bmmc_cpca$x))
+
+# plot the 2D representation
+cpca_df <- data.frame(
+  cPC1 = bmmc_cpca$x[, 1],
+  cPC2 = bmmc_cpca$x[, 2],
+  class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_027",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+cpca_p <- cpca_df %>%
+  ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("cPCA") +
+  scale_colour_viridis_d(name = "AML027",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+cpca_p
+```
+
+
+## scPCA
+
+```{r scpca_pat027}
+# load results from cluster files
+bmmc_scpca <- readRDS(here("analyses/bmmc_data/data/bmmc_scpca_027.rds"))
+
+# compute the average silhouette widths
+scpca_group_sil <- silhouette(group_mem, dist(bmmc_scpca$x))
+
+# plot the 2D representation
+scpca_df <- data.frame(
+  scPC1 = bmmc_scpca$x[, 1],
+  scPC2 = bmmc_scpca$x[, 2],
+  class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_027",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(scpca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(scpca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+scpca_p <- scpca_df %>%
+  ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("scPCA") +
+  scale_colour_viridis_d(name = "AML027",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+scpca_p
+```
+
+### Analysis of Genes with Non-Zero Entries in Loadings Matrix
+
+The following table provides the gene symbol and loadings of the genes with
+non-zero entries in one of the loadings vectors of the first two scPCs.
+
+```{r non_zer_bmmc_pat027}
+rot_pat027_df <- bmmc_scpca$rotation %>%
+  as_tibble %>%
+  dplyr::mutate(
+    gene_sym = rowData(patient_027_sce)$X2,
+    scPC1 = V1,
+    scPC2 = V2
+  ) %>%
+  select(-V1, -V2) %>%
+  dplyr::filter(scPC1 != 0 | scPC2 != 0)
+rot_pat027_df
+```
+
+### Comparison of Loadings Weights: cPCA and scPCA
+
+The absolute valules of the loadings are not compared for this patient, since
+only three entries in the leading loadings vectors produced by scPCA are
+non-zero.
+
+## t-SNE
+
+```{r tsne_pat027}
+# get tsne representation
+bmmc_tsne <- Rtsne(as.matrix(patient_027))
+
+# compute the average silhouette widths
+tsne_group_sil <- silhouette(group_mem, dist(bmmc_tsne$Y))
+
+# plot the first two axes
+tsne_df <- data.frame(
+  TSNE1 = bmmc_tsne$Y[, 1],
+  TSNE2 = bmmc_tsne$Y[, 2],
+  class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_027",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(tsne_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(tsne_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+tsne_p <- tsne_df %>%
+  ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("t-SNE") +
+  scale_colour_viridis_d(name = "AML027",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+tsne_p
+```
+
+
+## UMAP
+
+```{r umap_pat027}
+# get the umap representation
+bmmc_umap <- umap(as.matrix(patient_027))
+
+# compute the average silhouette widths
+umap_group_sil <- silhouette(group_mem, dist(bmmc_umap$layout))
+
+# plot the first two axes
+umap_df <- bmmc_umap$layout %>%
+  as.data.frame() %>%
+  dplyr::mutate(
+    class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027"))
+  ) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_027",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(umap_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(umap_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+colnames(umap_df) <- c("UMAP1", "UMAP2", "class")
+
+umap_p <- umap_df %>%
+  ggplot(aes(x = UMAP1, y = UMAP2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("UMAP") +
+  scale_colour_viridis_d(name = "AML027",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+umap_p
+```
+
+
+## ZINB-WaVE
+
+```{r zinbwave_pat027}
+# load the zinbwave model
+bmmc_zinbwave_sce <- readRDS(here("analyses/bmmc_data/data/zinbwave_027.rds"))
+
+# compute the average silhouette widths
+zinbwave_group_sil <- silhouette(group_mem,
+                                 dist(reducedDim(bmmc_zinbwave_sce)[, 1:2]))
+
+# create a dataframe for plotting
+zinbwave_df <- data.frame(
+  ZW1 = reducedDim(bmmc_zinbwave_sce)[, 1],
+  ZW2 = reducedDim(bmmc_zinbwave_sce)[, 2],
+  class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_027",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(zinbwave_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(zinbwave_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+zinbwave_p <- zinbwave_df %>%
+  ggplot(aes(x = ZW1, y = ZW2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("ZINB-WaVE") +
+  scale_colour_viridis_d(name = "AML027",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+zinbwave_p
+```
+
+
+## Combined Plots
+
+```{r combined_pat027, fig.retina=3, fig.width=10, fig.height=10}
+pat027_p <- ggarrange(pca_p, zinbwave_p, tsne_p, umap_p, cpca_p, scpca_p,
+            ncol = 2, nrow = 3)
+pat027_p
+```
+
+
+# AML035
+
+## PCA
+
+```{r pca_pat035}
+# perform PCA
+bmmc_pca <- prcomp(patient_035, center = TRUE, scale. = TRUE)
+
+# compute the average silhouette widths
+group_mem <- if_else(pat035_class == "pre_trans_035", 1, 2)
+pca_group_sil <- silhouette(group_mem, dist(bmmc_pca$x))
+
+# plot the 2D representation
+pca_df <- data.frame(
+  PC1 = bmmc_pca$x[, 1],
+  PC2 = bmmc_pca$x[, 2],
+  class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_035",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+pca_p <- pca_df %>%
+  ggplot(aes(x = PC1, y = PC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("PCA") +
+  scale_colour_viridis_d(name = "AML035",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+pca_p
+```
+
+
+## cPCA
+
+```{r cpca_pat035}
+set.seed(1436262)
+
+# perform cpca
+bmmc_cpca <- scPCA(as.matrix(patient_035), as.matrix(background),
+                   center = TRUE, scale = TRUE, penalties = 0, n_centers = 2,
+                   max_iter = 1000)
+
+# compute the average silhouette widths
+cpca_group_sil <- silhouette(group_mem, dist(bmmc_cpca$x))
+
+# plot the 2D representation
+cpca_df <- data.frame(
+  cPC1 = bmmc_cpca$x[, 1],
+  cPC2 = bmmc_cpca$x[, 2],
+  class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_035",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+cpca_p <- cpca_df %>%
+  ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("cPCA") +
+  scale_colour_viridis_d(name = "AML035",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+cpca_p
+```
+
+
+## scPCA
+
+
+```{r scpca_pat035}
+# load results from cluster files
+bmmc_scpca <- readRDS(here("analyses/bmmc_data/data/bmmc_scpca_035.rds"))
+
+# compute the average silhouette widths
+scpca_group_sil <- silhouette(group_mem, dist(bmmc_scpca$x))
+
+# plot the 2D representation
+scpca_df <- data.frame(
+  scPC1 = bmmc_scpca$x[, 1],
+  scPC2 = bmmc_scpca$x[, 2],
+  class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_035",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(scpca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(scpca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+scpca_p <- scpca_df %>%
+  ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("scPCA") +
+  scale_colour_viridis_d(name = "AML035",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+scpca_p
+```
+
+
+### Analysis of Genes with Non-Zero Entries in Loadings Matrix
+
+The following table provides the gene symbol and loadings of the genes with
+non-zero entries in one of the loadings vectors of the first two scPCs.
+
+```{r non_zer_bmmc_pat035}
+rot_035_df <- bmmc_scpca$rotation %>%
+  as_tibble %>%
+  dplyr::mutate(
+    gene_sym = rowData(patient_035_sce)$X2,
+    scPC1 = V1,
+    scPC2 = V2
+  ) %>%
+  select(-V1, -V2) %>%
+  dplyr::filter(scPC1 != 0 | scPC2 != 0)
+rot_035_df
+```
+
+### Comparison of Loadings Weights: cPCA and scPCA
+
+```{r pat035_comp}
+# compute the relative absolute loading ratios
+cpca_loads_df <- bmmc_cpca$rotation %>%
+  as.data.frame() %>%
+  dplyr::mutate(
+    V1 = abs(V1),
+    V2 = abs(V2),
+    V1 = (V1-min(V1))/(max(V1)-min(V1)),
+    V2 = (V2-min(V2))/(max(V2)-min(V2))
+  )
+scpca_loads_df <- bmmc_scpca$rotation %>%
+  as.data.frame() %>%
+  dplyr::mutate(
+    V1 = abs(V1),
+    V2 = abs(V2),
+    V1 = (V1-min(V1))/(max(V1)-min(V1)),
+    V2 = (V2-min(V2))/(max(V2)-min(V2))
+  )
+
+# create the loadings comparison plot
+load_diff_df <- bind_rows(
+  cpca_loads_df,
+  scpca_loads_df
+) %>%
+  dplyr::mutate(
+    sparse = c(rep("0", ncol(patient_035)),
+               rep("1", ncol(patient_035))),
+    sparse = factor(sparse, labels = c("cPCA", "scPCA")),
+    gene = rep(1:ncol(patient_035), 2)
+  )
+
+colnames(load_diff_df) <- c("comp1", "comp2", "sparse", "gene")
+
+# order the genes based on decreasing rel abs cpca loadings
+ord_1_gene <- factor(load_diff_df$gene,
+                     levels = sort(load_diff_df$comp1[1:ncol(patient_035)],
+                                   decreasing = TRUE, index.return = TRUE)$ix)
+ord_2_gene <- factor(load_diff_df$gene,
+                     levels = sort(load_diff_df$comp2[1:ncol(patient_035)],
+                                   decreasing = TRUE, index.return = TRUE)$ix)
+load_diff_df <- load_diff_df %>%
+  dplyr::mutate(
+    gene1 = ord_1_gene,
+    gene2 = ord_2_gene
+  )
+
+p1 <- load_diff_df %>%
+  ggplot(aes(y = abs(comp1), x = gene1, fill = sparse, alpha = sparse)) +
+  geom_bar(stat = "identity", position = position_identity()) +
+  xlab("Genes") +
+  ylab("Relative Abs. Weight") +
+  ggtitle("First Loadings Vector Comparison") +
+  scale_fill_viridis_d(name = "Method",
+                       labels = c("cPCA", "scPCA"),
+                       begin = 0.9, end = 0.1) +
+  scale_alpha_discrete(range = c(0.5, 1),
+                       guide = FALSE) +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+p2 <- load_diff_df %>%
+  ggplot(aes(y = abs(comp2), x = gene2, fill = sparse, alpha = sparse)) +
+  geom_bar(stat = "identity", position = position_identity()) +
+  xlab("Genes") +
+  ylab("Relative Abs. Weight") +
+  ggtitle("Second Loadings Vector Comparison") +
+  scale_fill_viridis_d(name = "Method",
+                       labels = c("cPCA", "scPCA"),
+                       begin = 0.9, end = 0.1) +
+  scale_alpha_discrete(range = c(0.5, 1),
+                       guide = FALSE) +
+  theme_minimal() +
+  theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+loadings_comp <- annotate_figure(
+  ggarrange(p1, p2, nrow = 1, ncol = 2,
+            common.legend = TRUE, legend = "right")
+)
+```
+
+
+## t-SNE
+
+```{r tsne_pat035}
+# get tsne representation
+bmmc_tsne <- Rtsne(as.matrix(patient_035))
+
+# compute the average silhouette widths
+tsne_group_sil <- silhouette(group_mem, dist(bmmc_tsne$Y))
+
+# plot the first two axes
+tsne_df <- data.frame(
+  TSNE1 = bmmc_tsne$Y[, 1],
+  TSNE2 = bmmc_tsne$Y[, 2],
+  class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_035",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(tsne_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(tsne_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+
+tsne_p <- tsne_df %>%
+  ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("t-SNE") +
+  scale_colour_viridis_d(name = "AML035",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+tsne_p
+```
+
+
+## UMAP
+
+```{r umap_pat035}
+# get the umap representation
+bmmc_umap <- umap(as.matrix(patient_035))
+
+# compute the average silhouette widths
+umap_group_sil <- silhouette(group_mem, dist(bmmc_umap$layout))
+
+# plot the first two axes
+umap_df <- bmmc_umap$layout %>%
+  as.data.frame() %>%
+  dplyr::mutate(
+    class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035"))
+  ) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_035",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(umap_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(umap_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+colnames(umap_df) <- c("UMAP1", "UMAP2", "class")
+
+umap_p <- umap_df %>%
+  ggplot(aes(x = UMAP1, y = UMAP2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("UMAP") +
+  scale_colour_viridis_d(name = "AML035",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+umap_p
+```
+
+## ZINB-WaVE
+
+```{r zinbwave_pat035}
+# load the zinbwave model
+bmmc_zinbwave_sce <- readRDS(here("analyses/bmmc_data/data/zinbwave_035.rds"))
+
+# compute the average silhouette widths
+zinbwave_group_sil <- silhouette(group_mem,
+                                 dist(reducedDim(bmmc_zinbwave_sce)[, 1:2]))
+
+# create a dataframe for plotting
+zinbwave_df <- data.frame(
+  ZW1 = reducedDim(bmmc_zinbwave_sce)[, 1],
+  ZW2 = reducedDim(bmmc_zinbwave_sce)[, 2],
+  class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_035",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(zinbwave_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(zinbwave_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+zinbwave_p <- zinbwave_df %>%
+  ggplot(aes(x = ZW1, y = ZW2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("ZINB-WaVE") +
+  scale_colour_viridis_d(name = "AML035",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+zinbwave_p
+```
+
+## Combined Plots
+
+```{r combined_pat035, , fig.retina=3, fig.width=10, fig.height=12}
+pat035_p <- ggarrange(pca_p, zinbwave_p, tsne_p, umap_p, cpca_p, scpca_p,
+            ncol = 2, nrow = 3)
+pat035_complete <- ggarrange(
+  pat035_p,
+  loadings_comp,
+  nrow = 2,
+  labels = "AUTO",
+  heights = c(3, 1)
+)
+```
