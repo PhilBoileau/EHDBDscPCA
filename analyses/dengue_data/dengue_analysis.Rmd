@@ -201,7 +201,7 @@ colnames(cpca_2_df) <- c("cPC1", "cPC2", "label")
 # plot the results
 p_cpca_2 <- ggplot(cpca_2_df, aes(x = cPC1, y = -cPC2, colour = label)) +
   geom_point() +
-  ggtitle("Two Centers") +
+  ggtitle("Two Clusters") +
   xlab("cPC1") +
   ylab("cPC2") +
   scale_colour_viridis_d(name = "Class",
@@ -238,7 +238,7 @@ colnames(cpca_3_df) <- c("cPC1", "cPC2", "label")
 # plot the results
 p_cpca_3 <- ggplot(cpca_3_df, aes(x = -cPC1, y = cPC2, colour = label)) +
   geom_point() +
-  ggtitle("Three Centers") +
+  ggtitle("Three Clusters") +
   xlab("cPC1") +
   ylab("cPC2") +
   scale_colour_viridis_d(name = "Class",
@@ -275,7 +275,7 @@ colnames(cpca_4_df) <- c("cPC1", "cPC2", "label")
 # plot the results
 p_cpca_4 <- ggplot(cpca_4_df, aes(x = -cPC1, y = cPC2, colour = label)) +
   geom_point() +
-  ggtitle("Four Centers") +
+  ggtitle("Four Clusters") +
   xlab("cPC1") +
   ylab("cPC2") +
   scale_colour_viridis_d(name = "Class",
@@ -312,7 +312,7 @@ colnames(cpca_5_df) <- c("cPC1", "cPC2", "label")
 # plot the results
 p_cpca_5 <- ggplot(cpca_5_df, aes(x = cPC1, y = -cPC2, colour = label)) +
   geom_point() +
-  ggtitle("Five Centers") +
+  ggtitle("Five Clusters") +
   xlab("cPC1") +
   ylab("cPC2") +
   scale_colour_viridis_d(name = "Class",
@@ -407,7 +407,7 @@ colnames(scpca_2_df) <- c("scPC1", "scPC2", "class")
 # plot the results
 p_scpca_2 <- ggplot(scpca_2_df, aes(x = scPC1, y = scPC2, colour = class)) +
   geom_point() +
-  ggtitle("Two Centers") +
+  ggtitle("Two Clusters") +
   xlab("scPC1") +
   ylab("scPC2") +
   scale_colour_viridis_d(name = "Class",
@@ -444,7 +444,7 @@ colnames(scpca_3_df) <- c("scPC1", "scPC2", "class")
 # plot the results
 p_scpca_3 <- ggplot(scpca_3_df, aes(x = scPC1, y = scPC2, colour = class)) +
   geom_point() +
-  ggtitle("Three Centers") +
+  ggtitle("Three Clusters") +
   xlab("scPC1") +
   ylab("scPC2") +
   scale_colour_viridis_d(name = "Class",
@@ -481,7 +481,7 @@ colnames(scpca_4_df) <- c("scPC1", "scPC2", "class")
 # plot the results
 p_scpca_4 <- ggplot(scpca_4_df, aes(x = scPC1, y = scPC2, colour = class)) +
   geom_point() +
-  ggtitle("Four Centers") +
+  ggtitle("Four Clusters") +
   xlab("scPC1") +
   ylab("scPC2") +
   scale_colour_viridis_d(name = "Class",
@@ -518,8 +518,8 @@ colnames(scpca_5_df) <- c("sscPC1", "scPC2", "class")
 # plot the results
 p_scpca_5 <- ggplot(scpca_5_df, aes(x = sscPC1, y = -scPC2, colour = class)) +
   geom_point() +
-  ggtitle("Five Centers") +
-  xlab("sscPC1") +
+  ggtitle("Five Clusters") +
+  xlab("scPC1") +
   ylab("scPC2") +
   scale_colour_viridis_d(name = "Class",
                          begin = 0.1, end = 0.9) +
@@ -627,7 +627,7 @@ p1 <- load_diff_df %>%
 p2 <- load_diff_df %>%
   ggplot(aes(y = comp2, x = gene2, fill = sparse, alpha = sparse)) +
     geom_bar(stat = "identity", position = position_identity()) +
-    xlab("Gene") +
+    xlab("Genes") +
     ylab("Relative Abs. Weight") +
     ggtitle("Second Loadings Vector Comparison") +
     scale_fill_viridis_d(name = "Method",
@@ -688,6 +688,9 @@ tsne_df <- data.frame(
 tsne_p <- tsne_df %>%
   ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
   geom_point() +
+  xlab("tSNE1") +
+  ylab("tSNE2") +
+  ggtitle("t-SNE") +
   scale_colour_viridis_d(name = "Class",
                          begin = 0.1, end = 0.9) +
   theme_minimal()

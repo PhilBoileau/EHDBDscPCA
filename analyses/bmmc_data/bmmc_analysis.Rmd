@@ -241,6 +241,8 @@ tsne_p <- tsne_df %>%
   ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
   geom_point(alpha = 0.5) +
   ggtitle("t-SNE") +
+  xlab("tSNE1") +
+  ylab("tSNE2") +
   scale_colour_viridis_d(name = "AML027",
                          begin = 0.1, end = 0.9) +
   theme_minimal()
@@ -608,6 +610,8 @@ tsne_p <- tsne_df %>%
   ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
   geom_point(alpha = 0.5) +
   ggtitle("t-SNE") +
+  xlab("tSNE1") +
+  ylab("tSNE2") +
   scale_colour_viridis_d(name = "AML035",
                          begin = 0.1, end = 0.9) +
   theme_minimal()

@@ -167,7 +167,7 @@ p_cpca_2 <- ggplot(cpca_2_df, aes(x = -cPC1, y = -cPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
-  ggtitle("Two Centers") +
+  ggtitle("Two Clusters") +
   xlab("cPC1") +
   ylab("cPC2") +
   theme_minimal()
@@ -198,7 +198,7 @@ p_cpca_3 <- ggplot(cpca_3_df, aes(x = cPC1, y = cPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
-  ggtitle("Three Centers") +
+  ggtitle("Three Clusters") +
   xlab("cPC1") +
   ylab("cPC2") +
   theme_minimal()
@@ -229,7 +229,7 @@ p_cpca_4 <- ggplot(cpca_4_df, aes(x = cPC1, y = cPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
-  ggtitle("Four Centers") +
+  ggtitle("Four Clusters") +
   xlab("cPC1") +
   ylab("cPC2") +
   theme_minimal()
@@ -260,7 +260,7 @@ p_cpca_5 <- ggplot(cpca_5_df, aes(x = cPC1, y = -cPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
-  ggtitle("Five Centers") +
+  ggtitle("Five Clusters") +
   xlab("cPC1") +
   ylab("cPC2") +
   theme_minimal()
@@ -354,7 +354,7 @@ p_scpca_2 <- ggplot(scpca_2_df, aes(x = -scPC1, y = scPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
-  ggtitle("Two Centers") +
+  ggtitle("Two Clusters") +
   xlab("scPC1") +
   ylab("scPC2") +
   theme_minimal()
@@ -384,7 +384,7 @@ p_scpca_3 <- ggplot(scpca_3_df, aes(x = -scPC1, y = scPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
-  ggtitle("Three Centers") +
+  ggtitle("Three Clusters") +
   xlab("scPC1") +
   ylab("scPC2") +
   theme_minimal()
@@ -414,7 +414,7 @@ p_scpca_4 <- ggplot(scpca_4_df, aes(x = -scPC1, y = scPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
-  ggtitle("Four Centers") +
+  ggtitle("Four Clusters") +
   xlab("scPC1") +
   ylab("scPC2") +
   theme_minimal()
@@ -444,7 +444,7 @@ p_scpca_5 <- ggplot(scpca_5_df, aes(x = -scPC1, y = -scPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
-  ggtitle("Five Centers") +
+  ggtitle("Five Clusters") +
   xlab("scPC1") +
   ylab("scPC2") +
   theme_minimal()
@@ -581,6 +581,8 @@ p_tsne <- ggplot(tsne_df, aes(x = tSNE1, y = tSNE2, colour = label)) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
   ggtitle("t-SNE") +
+  xlab("tSNE1") +
+  ylab("tSNE2") +
   theme_minimal()
 p_tsne
 ```

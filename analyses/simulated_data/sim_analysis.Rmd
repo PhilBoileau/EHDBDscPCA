@@ -379,7 +379,7 @@ p1 <- load_diff_df %>%
   ggplot(aes(y = comp1, x = ord_genes,
              fill = sparse, alpha = sparse)) +
   geom_bar(stat = "identity", position = position_identity()) +
-  xlab("Gene") +
+  xlab("Genes") +
   ylab("Relative Abs. Weight") +
   ggtitle("First Loadings Vector Comparison") +
   scale_fill_viridis_d(name = "Method",
@@ -478,6 +478,8 @@ tsne_p <- tsne_df %>%
   ggplot(aes(x = TSNE1, y = TSNE2, colour = group, shape = batch)) +
   geom_point() +
   ggtitle("t-SNE") +
+  xlab("tSNE1") +
+  ylab("tSNE2") +
   scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
                          begin = 0.1, end = 0.9) +
   scale_shape_discrete(name = "Batch (Ave. S.W.)") +
