@@ -489,7 +489,7 @@ rot_035_df
 
 ### Comparison of Loadings Weights: cPCA and scPCA
 
-```{r pat035_comp, message = FALSE, warnings = FALSE}
+```{r pat035_comp, message = FALSE, warning = FALSE}
 # compute the relative absolute loading ratios
 cpca_loads_df <- bmmc_cpca$rotation %>%
   as.data.frame() %>%
