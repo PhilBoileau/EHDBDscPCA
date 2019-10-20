@@ -506,7 +506,7 @@ load_diff_df <- load_diff_df %>%
 p1 <- load_diff_df %>% 
   ggplot(aes(y = comp1, x = prot1,
              fill = sparse, alpha = sparse)) +
-    geom_bar(stat = "identity", position = position_identity()) +
+    geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Proteins") +
     ylab("Relative Abs. Weight") +
     ggtitle("First Loadings Vector Comparison") +
@@ -524,7 +524,7 @@ p1 <- load_diff_df %>%
 p2 <- load_diff_df %>%
   ggplot(aes(y = comp2, x = prot2,
              fill = sparse, alpha = sparse)) +
-    geom_bar(stat = "identity", position = position_identity()) +
+    geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Proteins") +
     ylab("Relative Abs. Weight") +
     ggtitle("Second Loadings Vector Comparison") +

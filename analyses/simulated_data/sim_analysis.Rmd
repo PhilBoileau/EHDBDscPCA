@@ -378,7 +378,7 @@ load_diff_df <- load_diff_df %>%
 p1 <- load_diff_df %>%
   ggplot(aes(y = comp1, x = ord_genes,
              fill = sparse, alpha = sparse)) +
-  geom_bar(stat = "identity", position = position_identity()) +
+  geom_bar(stat = "identity", position = position_identity(), width = 1) +
   xlab("Genes") +
   ylab("Relative Abs. Weight") +
   ggtitle("First Loadings Vector Comparison") +
@@ -423,7 +423,7 @@ scpca_table %>%
     Gene = 1:nrow(scpca_table)
   ) %>% 
   ggplot(aes(x = Gene, y = diff, fill = factor(scPCA1))) +
-    geom_bar(stat = "identity") +
+    geom_bar(stat = "identity", width = 1) +
     ggtitle("Differential Expression Ranking of Simulated Genes") +
     xlab("Simulated Genes") +
     ylab("Diff. in DE Multiplicative Factor \n Between Target Groups") +
@@ -617,9 +617,9 @@ sim_zinbwave_batch <- zinbwave(
   X = "~Batch"
 )
 
-zinb_batch_sil <- silhouette(batch_mem,
+zinb_b_batch_sil <- silhouette(batch_mem,
                              dist(reducedDim(sim_zinbwave_batch)[, 1:2]))
-zinb_group_sil <- silhouette(group_mem,
+zinb_b_group_sil <- silhouette(group_mem,
                              dist(reducedDim(sim_zinbwave_batch)[, 1:2]))
 
 
@@ -634,18 +634,18 @@ zinbwave_b_df <- data.frame(
     batch = if_else(
       batch == "Batch1",
       paste0("1 (",
-             sprintf("%.3f", round(summary(zinb_batch_sil)$clus.avg.widths[1], 3)),
+             sprintf("%.3f", round(summary(zinb_b_batch_sil)$clus.avg.widths[1], 3)),
              ")"),
       paste0("2 (",
-             sprintf("%.3f", round(summary(zinb_batch_sil)$clus.avg.widths[2], 3)),
+             sprintf("%.3f", round(summary(zinb_b_batch_sil)$clus.avg.widths[2], 3)),
              ")")),
     group = if_else(
       group == "Group1",
       paste0("1 (",
-             sprintf("%.3f", round(summary(zinb_group_sil)$clus.avg.widths[1], 3)),
+             sprintf("%.3f", round(summary(zinb_b_group_sil)$clus.avg.widths[1], 3)),
              ")"),
       paste0("2 (",
-             sprintf("%.3f", round(summary(zinb_group_sil)$clus.avg.widths[2], 3)),
+             sprintf("%.3f", round(summary(zinb_b_group_sil)$clus.avg.widths[2], 3)),
              ")"))
     )
 
@@ -687,3 +687,41 @@ ggarrange(
     heights = c(1, 3, 1)
 )
 ```
+
+# Average Sil. Width Plot
+
+```{r ave_sil_width_comp}
+# create a dataframe of the ave sil widths
+ave_sil_width_df <- data.frame(
+  "ave_sil" = c(summary(pca_group_sil)$clus.avg.widths,
+                summary(pca_batch_sil)$clus.avg.widths,
+                summary(cpca_group_sil)$clus.avg.widths,
+                summary(cpca_batch_sil)$clus.avg.widths,
+                summary(scpca_group_sil)$clus.avg.widths,
+                summary(scpca_batch_sil)$clus.avg.widths,
+                summary(tsne_group_sil)$clus.avg.widths,
+                summary(tsne_batch_sil)$clus.avg.widths,
+                summary(umap_group_sil)$clus.avg.widths,
+                summary(umap_batch_sil)$clus.avg.widths,
+                summary(zinb_group_sil)$clus.avg.widths,
+                summary(zinb_batch_sil)$clus.avg.widths,
+                summary(zinb_b_group_sil)$clus.avg.widths,
+                summary(zinb_b_batch_sil)$clus.avg.widths),
+  "type" = rep(c("Group 1", "Group 2", "Batch 1", "Batch 2"), length.out = 28),
+  "method" = factor(rep(c("PCA", "cPCA", "scPCA", "t-SNE", "UMAP",
+                   "ZINB-WaVE (No Batch)", "ZINB-WaVE (Batch)"), each = 4),
+                   c("scPCA", "ZINB-WaVE (Batch)", "cPCA", "UMAP", "t-SNE",
+                     "ZINB-WaVE (No Batch)", "PCA"))
+)
+
+# plot the ave silhouette widths
+ave_sil_width_df %>%
+  ggplot(aes(x = method, y = ave_sil, shape = type)) +
+    geom_jitter(width = 0.15, height = 0) +
+    ylab("Ave. Sil. Widths") +
+    xlab("Method") +
+    ggtitle("Comparison of Technical Effect Removal, Simulated scRNA-seq Data") +
+    scale_shape_discrete(name = "Source") +
+    theme_minimal()
+```
+

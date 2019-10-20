@@ -609,7 +609,7 @@ colnames(load_diff_df) <- c("comp1", "comp2", "sparse", "gene",
 
 p1 <- load_diff_df %>%
   ggplot(aes(y = comp1, x = gene1, fill = sparse, alpha = sparse)) +
-    geom_bar(stat = "identity", position = position_identity()) +
+    geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Gene") +
     ylab("Relative Abs. Weight") +
     ggtitle("First Loadings Vector Comparison") +
@@ -626,7 +626,7 @@ p1 <- load_diff_df %>%
 
 p2 <- load_diff_df %>%
   ggplot(aes(y = comp2, x = gene2, fill = sparse, alpha = sparse)) +
-    geom_bar(stat = "identity", position = position_identity()) +
+    geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Genes") +
     ylab("Relative Abs. Weight") +
     ggtitle("Second Loadings Vector Comparison") +
