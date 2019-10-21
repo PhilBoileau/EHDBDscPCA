@@ -15,6 +15,7 @@ library(ggpubr)
 library(GEOquery)
 library(genefilter)
 library(cluster)
+library(xtable)
 
 knitr::opts_chunk$set(echo = FALSE)
 
@@ -539,7 +540,7 @@ gene_df <- target %>% colnames %>% tibble()
 colnames(gene_df) <- "affy_code"
 gene_df <- gene_df %>%
   left_join(gene_names, by = c("affy_code" = "ID")) %>%
-  select(affy_code, `Gene Symbol`)
+  select(affy_code, `Gene Symbol`, `Gene Title`)
 
 # extract the gene symbols that have non-zero loadings in the scPC
 rotation_df <- dengue_scpca$rotation %>%
@@ -548,15 +549,26 @@ rotation_df <- dengue_scpca$rotation %>%
     affy_code = rownames(dengue_scpca$rotation)
   ) %>%
   dplyr::left_join(gene_df, by = "affy_code")
-colnames(rotation_df) <- c("scPCA1", "scPCA2", "affy_code", "gene_sym")
+colnames(rotation_df) <- c("scPCA1", "scPCA2", "affy_code", "gene_sym",
+                           "gene_title")
 
+# print the table for the supp info
 gene_scpca1 <- rotation_df %>%
   dplyr::filter(scPCA1 != 0) %>%
-  dplyr::pull(gene_sym)
+  select(gene_sym, gene_title, scPCA1) %>%
+  xtable(
+    caption = "Genes with non-zero weights in first scPCA loadings vector.",
+    digits = 4
+  )
+
 
 gene_scpca2 <- rotation_df %>%
   dplyr::filter(scPCA2 != 0) %>%
-  dplyr::pull(gene_sym)
+  select(gene_sym, gene_title, scPCA2) %>%
+  xtable(
+    caption = "Genes with non-zero weights in second scPCA loadings vector.",
+    digits = 4
+  )
 
 ```
 

@@ -319,6 +319,25 @@ p_scpca <- ggplot(scpca_df, aes(x = -scPC1, y = scPC2, colour = label)) +
   theme_minimal()
 p_scpca
 
+# create table of proteins with non-zero weights in first and second loadings
+prot_scpca1 <- data.frame(
+  "name" = str_replace(names(scpca_mice$rotation[, 1]), "_N", ""),
+  "weight" = scpca_mice$rotation[, 1]
+) %>%
+  dplyr::filter(weight != 0) %>%
+  xtable(
+    caption = "Proteins with non-zero weights in first scPCA loadings vector.",
+    digits = 4
+  )
+prot_scpca2 <- data.frame(
+  "name" = str_replace(names(scpca_mice$rotation[, 2]), "_N", ""),
+  "weight" = scpca_mice$rotation[, 2]
+) %>%
+  dplyr::filter(weight != 0) %>%
+  xtable(
+    caption = "Proteins with non-zero weights in second scPCA loadings vector.",
+    digits = 4
+  )
 # run the code for 2-5 centers
 scpca_diff_centers <- lapply(
   2:5,
