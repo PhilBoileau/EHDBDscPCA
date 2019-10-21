@@ -41,6 +41,8 @@ background_df <- mice_df %>%
   impute_median_all
 ```
 
+Please see the results section of the manuscript for a description of the
+experimental design.
 
 ### PCA
 
@@ -457,7 +459,7 @@ ggarrange(p_scpca_2, p_scpca_3, p_scpca_4, p_scpca_5,
 
 ### Comparison of cPCA and scPCA Loadings
 
-```{r loadings_comp, warning=FALSE}
+```{r loadings_comp, warning=FALSE, message=FALSE}
 # compute the relative absolute loading ratios
 cpca_loads_df <- cpca_mice$rotation %>%
   as.data.frame() %>%
