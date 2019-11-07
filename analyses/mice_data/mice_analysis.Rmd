@@ -16,6 +16,7 @@ library(ggpubr)
 library(naniar)
 library(SingleCellExperiment)
 library(cluster)
+library(xtable)
 
 knitr::opts_chunk$set(echo = FALSE)
 set.seed(734576345)
@@ -401,7 +402,7 @@ scpca_3_df <- scpca_diff_centers[[2]]$x %>%
 
 colnames(scpca_3_df) <- c("scPC1", "scPC2", "label")
 
-p_scpca_3 <- ggplot(scpca_3_df, aes(x = -scPC1, y = scPC2, colour = label)) +
+p_scpca_3 <- ggplot(scpca_3_df, aes(x = -scPC1, y = -scPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
@@ -431,7 +432,7 @@ scpca_4_df <- scpca_diff_centers[[3]]$x %>%
 
 colnames(scpca_4_df) <- c("scPC1", "scPC2", "label")
 
-p_scpca_4 <- ggplot(scpca_4_df, aes(x = -scPC1, y = scPC2, colour = label)) +
+p_scpca_4 <- ggplot(scpca_4_df, aes(x = -scPC1, y = -scPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
