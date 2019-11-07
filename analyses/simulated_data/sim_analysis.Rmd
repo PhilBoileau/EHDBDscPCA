@@ -715,13 +715,19 @@ ave_sil_width_df <- data.frame(
 )
 
 # plot the ave silhouette widths
+set.seed(210)
 ave_sil_width_df %>%
-  ggplot(aes(x = method, y = ave_sil, shape = type)) +
-    geom_jitter(width = 0.15, height = 0) +
+  ggplot(aes(x = method, y = ave_sil, shape = type, colour = type)) +
+    geom_jitter(width = 0.2, height = 0, size = 2) +
     ylab("Ave. Sil. Widths") +
     xlab("Method") +
     ggtitle("Comparison of Technical Effect Removal, Simulated scRNA-seq Data") +
-    scale_shape_discrete(name = "Source") +
+    scale_shape_manual(name = "Source",
+                       values = c(1, 2, 3, 4)) +
+    scale_colour_manual(name = "Source",
+                        values = c("red", "red", "blue", "blue")) +
     theme_minimal()
 ```
+
+
 
