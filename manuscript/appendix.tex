@@ -82,6 +82,8 @@ $\mathbf{Y}_{\mathcal{T}_v^y}$ the $\left(m - \lvert \mathcal{T}_v^y \rvert\righ
 
 \FloatBarrier
 
+\newpage
+
 \section{Contrastive Parameter Intuition}
 
 \begin{figure}[!htbp]
@@ -89,7 +91,7 @@ $\mathbf{Y}_{\mathcal{T}_v^y}$ the $\left(m - \lvert \mathcal{T}_v^y \rvert\righ
     \includegraphics[width=0.9\textwidth]{figures/cpca_example_plot.png}
     \caption{
     {\em Effect of contrastive parameter for cPCA.}
-    cPCA as implemented by \citet{Abid2018} was applied to a simulated dataset of $n=400$ observations, split across 4 groups, with $p=30$ variables. The first 10 variables are distributed as $N(0, 10)$ for all observations. Variables 11
+    cPCA as implemented by Abid et al. was applied to a simulated dataset of $n=400$ observations, split across 4 groups, with $p=30$ variables. The first 10 variables are distributed as $N(0, 10)$ for all observations. Variables 11
     through 20 are distributed as $N(0, 1)$ for Groups 1 an 2, and as $N(3, 1)$
     for Groups 3 and 4. Variables 21 through 30 are distributed as $N(-3, 1)$
     for Groups 1 and 3, and as $N(0, 1)$ for Groups 2 and 4. cPCA also takes
@@ -97,7 +99,7 @@ $\mathbf{Y}_{\mathcal{T}_v^y}$ the $\left(m - \lvert \mathcal{T}_v^y \rvert\righ
     variables, where the first 10 variables are distributed as $N(0, 10)$, the
     following 10 as $N(0, 3)$, and the remaining 10 as $N(0, 1)$. The results
     of cPCA are then presented for eight increasing values of the contrastive
-    parameter $\gamma$, selected using the technique described by \citet{Abid2018}. For the smaller values of the contrastive parameter, the
+    parameter $\gamma$, selected using the technique described by Abid et al. For the smaller values of the contrastive parameter, the
     noise contained in the first 10 variables of the target data dominates the
     signal contained in variables 11 through 30. As the contrastive parameter
     increases, the signal in the target data set is unmasked. However, once the
@@ -105,15 +107,18 @@ $\mathbf{Y}_{\mathcal{T}_v^y}$ the $\left(m - \lvert \mathcal{T}_v^y \rvert\righ
     distinction between groups becomes increasingly poor; the variation
     contained in the background data begins to dominate the variation contained
     in the target data. A virtually identical dataset is presented in the
-    supplementary material of \citet{Abid2018}. }
+    supplementary material of Abid et al. }
     \label{fig:contrastive_par}
 \end{figure}
 
 \FloatBarrier
 
+\newpage
+
 \section{Simulated Data}
 
-See Section \ref{sim_scRNA-seq} for information on the simulation model and dataset.
+See Section 3.1 %\ref{sim_scRNA-seq}
+for information on the simulation model and dataset.
 
 \begin{figure}[!htbp]
     \centering
@@ -136,7 +141,8 @@ See Section \ref{sim_scRNA-seq} for information on the simulation model and data
 
 \section{Dengue Microarray Data}\label{sup_dengue}
 
-See Section \ref{dengue_data} for information on the data.
+See Section 3.2 %\ref{dengue_data}
+for information on the data.
 
 \begin{figure}[!htbp]
     \centering
@@ -243,9 +249,12 @@ See Section \ref{dengue_data} for information on the data.
 
 \FloatBarrier
 
+\newpage
+
 \section{Leukemia Patient scRNA-seq Data}
 
-See Section \ref{leukemia_data} for information on the data.
+See Section 3.3 %\ref{leukemia_data}
+for information on the data.
 
 \begin{figure}[!htbp]
   \centering
@@ -257,9 +266,9 @@ See Section \ref{leukemia_data} for information on the data.
 
 \section{Mouse Protein Expression Data}\label{sup_mice}
 
-Down Syndrome, the leading genetic cause of intellectual disability \cite{Irving2008}, is the result of trisomy of all or part of the long arm of chromosome 21 \cite{Ahmed2015}. Recently, researchers have begun exploring the use of pharmacotherapies to mitigate these cognitive deficits using the Ts65Dn mouse model \cite{Ahmed2015,Higuera2015}. Though not a perfect model for the study of Down Syndrome, the Ts65Dn displays many relevant neurological phenotypic features, such as deficits in learning and memory \cite{Rueda2012}.
+Down Syndrome, the leading genetic cause of intellectual disability \citeSM{Irving2008}, is the result of trisomy of all or part of the long arm of chromosome 21 \citeSM{Ahmed2015}. Recently, researchers have begun exploring the use of pharmacotherapies to mitigate these cognitive deficits using the Ts65Dn mouse model \citeSM{Ahmed2015,Higuera2015}. Though not a perfect model for the study of Down Syndrome, the Ts65Dn displays many relevant neurological phenotypic features, such as deficits in learning and memory \citeSM{Rueda2012}.
 
-\citet{Ahmed2015} analyzed protein expression in the hippocampus and cortex of Ts65Dn and control mice after exposure to context fear conditioning and Memantine treatment. Memantine, a drug often prescribed to Alzheimer's patients, has been demonstrated to improve performance of the Ts65Dn in tasks that reflect cognitive abilities \cite{Ahmed2015}. The corresponding dataset was made available by \citet{Higuera2015}. The data consist of normalized expression measures for 77 proteins from subcellular fractions of the cortex assayed from 38 control and 34 Ts65Dn mice. Each protein expression measurement was repeated 15 times (i.e., 15 technical replicates per mouse for each of the 77 proteins), though a small number of replicates contain missing protein expression measurements due to technical artifacts \cite{Higuera2015}. More details on the experimental design are provided in fig. \ref{fig:exp_design}.
+Ahmed et al. \citeSM{Ahmed2015} analyzed protein expression in the hippocampus and cortex of Ts65Dn and control mice after exposure to context fear conditioning and Memantine treatment. Memantine, a drug often prescribed to Alzheimer's patients, has been demonstrated to improve performance of the Ts65Dn in tasks that reflect cognitive abilities \citeSM{Ahmed2015}. The corresponding dataset was made available by Higuera et al. \citeSM{Higuera2015}. The data consist of normalized expression measures for 77 proteins from subcellular fractions of the cortex assayed from 38 control and 34 Ts65Dn mice. Each protein expression measurement was repeated 15 times (i.e., 15 technical replicates per mouse for each of the 77 proteins), though a small number of replicates contain missing protein expression measurements due to technical artifacts \citeSM{Higuera2015}. More details on the experimental design are provided in fig. \ref{fig:exp_design}.
 
 \begin{figure}[!htbp]
     \centering
@@ -270,9 +279,9 @@ Down Syndrome, the leading genetic cause of intellectual disability \cite{Irving
     \label{fig:exp_design}
 \end{figure}
 
-To demonstrate scPCA's capacity to capture biologically meaningful and interpretable variation in protein expression data, the technical replicates of the subset comprising 9 control and 9 Ts65Dn mice not subject to context fear conditioning and given a placebo were designated as the target dataset. The technical replicates of the subset of 9 control mice that were subject to context fear conditioning and given a placebo made up the background dataset, as the variation in their protein expression measurements are believed to be similar to that found in the control mice of the target dataset. The data are identical to those used by \citet{Abid2018} to demonstrate cPCA. PCA, t-SNE, UMAP, cPCA, and scPCA were applied to the target dataset (fig.~\ref{fig:comp_mice}A) to identify differences in protein expression between the control and trisomic mice not exposed to the context fear conditioning experiment. In addition to the target dataset, cPCA and scPCA took as input the column-centered background dataset and specified two clusters \textit{a priori}. The embedding produced by t-SNE is substantially worse than other methods because it generates spurious sub-clusters (fig.~\ref{fig:mice_tsne}).
+To demonstrate scPCA's capacity to capture biologically meaningful and interpretable variation in protein expression data, the technical replicates of the subset comprising 9 control and 9 Ts65Dn mice not subject to context fear conditioning and given a placebo were designated as the target dataset. The technical replicates of the subset of 9 control mice that were subject to context fear conditioning and given a placebo made up the background dataset, as the variation in their protein expression measurements are believed to be similar to that found in the control mice of the target dataset. The data are identical to those used by Abid et al. \citeSM{Abid2018} to demonstrate cPCA. PCA, t-SNE, UMAP, cPCA, and scPCA were applied to the target dataset (fig.~\ref{fig:comp_mice}A) to identify differences in protein expression between the control and trisomic mice not exposed to the context fear conditioning experiment. In addition to the target dataset, cPCA and scPCA took as input the column-centered background dataset and specified two clusters \textit{a priori}. The embedding produced by t-SNE is substantially worse than other methods because it generates spurious sub-clusters (fig.~\ref{fig:mice_tsne}).
 
-PCA proved incapable of distinguishing between the biological groups of interest. UMAP, cPCA, and scPCA successfully split the control and trisomic mice into virtually distinct clusters, though the number of clusters found by UMAP and cPCA in two dimensions did not match, even when varying the \textit{a priori} specified number of clusters in cPCA (fig.~\ref{fig:mice_cpca_centers}). Comparing the results of UMAP and scPCA, we find that they produce the same number of clusters, but their representations of the global structure are markedly different, even when varying the number of clusters specified \textit{a priori} in scPCA (fig.~\ref{fig:mice_scpca_centers}). The presence of distinct Ts65Dn clusters in UMAP's representation may correspond to technical noise that is diminished in cPCA's and scPCA's embeddings, or may arise from UMAP's inability to dependably capture global structure. We also remark that cPCA and scPCA produce very similar embeddings, up to a rotation; however, the first and second columns of scPCA's loadings matrix contain merely 12 and 16 non-zero entries, respectively (fig.~\ref{fig:comp_mice}B). Also note that the the separation of control and trisomic mice by scPCA only occurs in scPC2: the proteins with non-zero weights in its corresponding loading vector include AKT, APP, SOD1, and GSK3, each of which has been associated with Down Syndrome in human or mouse models \cite{Troca-Marn9445,Niceta2015,Gulesserian2001,Isacson2002}.  The full list of proteins with non-zero weights in the first two loadings vectors of scPCA are provided in Table \ref{tab:mouse_prot_1} and  Table \ref{tab:mouse_prot_2}.
+PCA proved incapable of distinguishing between the biological groups of interest. UMAP, cPCA, and scPCA successfully split the control and trisomic mice into virtually distinct clusters, though the number of clusters found by UMAP and cPCA in two dimensions did not match, even when varying the \textit{a priori} specified number of clusters in cPCA (fig.~\ref{fig:mice_cpca_centers}). Comparing the results of UMAP and scPCA, we find that they produce the same number of clusters, but their representations of the global structure are markedly different, even when varying the number of clusters specified \textit{a priori} in scPCA (fig.~\ref{fig:mice_scpca_centers}). The presence of distinct Ts65Dn clusters in UMAP's representation may correspond to technical noise that is diminished in cPCA's and scPCA's embeddings, or may arise from UMAP's inability to dependably capture global structure. We also remark that cPCA and scPCA produce very similar embeddings, up to a rotation; however, the first and second columns of scPCA's loadings matrix contain merely 12 and 16 non-zero entries, respectively (fig.~\ref{fig:comp_mice}B). Also note that the the separation of control and trisomic mice by scPCA only occurs in scPC2: the proteins with non-zero weights in its corresponding loading vector include AKT, APP, SOD1, and GSK3, each of which has been associated with Down Syndrome in human or mouse models \citeSM{Troca-Marn9445,Niceta2015,Gulesserian2001,Isacson2002}.  The full list of proteins with non-zero weights in the first two loadings vectors of scPCA are provided in Table \ref{tab:mouse_prot_1} and  Table \ref{tab:mouse_prot_2}.
 
 \begin{figure}[!htbp]
   \centering
