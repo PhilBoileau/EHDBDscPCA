@@ -1,0 +1,65 @@
+\makeatletter
+\@ifclassloaded{bioinfo}{%
+    % work fine with Bioinformatics
+    \usepackage{lmodern}
+    \usepackage{color}
+    \usepackage{float}
+    \usepackage{url}            % simple URL typesetting
+    \usepackage{nicefrac}       % compact symbols for 1/2, etc.
+    \usepackage{microtype}      % micro-typography
+    \usepackage{amsfonts}       % blackboard math symbols
+    \usepackage{amsmath}
+    \usepackage{mathtools}
+    \usepackage{amssymb}
+    \usepackage{amsthm}
+    \usepackage{bbm}
+    \usepackage{bm}
+    \usepackage{longtable}
+    \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+}{%
+    % work fine with Bioinformatics
+    \usepackage{lmodern}
+    \usepackage{color}
+    \usepackage{float}
+    \usepackage{url}            % simple URL typesetting
+    \usepackage{nicefrac}       % compact symbols for 1/2, etc.
+    \usepackage{microtype}      % micro-typography
+    \usepackage{amsfonts}       % blackboard math symbols
+    \usepackage{amsmath}
+    \usepackage{mathtools}
+    \usepackage{amssymb}
+    \usepackage{amsthm}
+    \usepackage{bbm}
+    \usepackage{bm}
+    \usepackage{longtable}
+    \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
+    \usepackage{placeins}
+
+    % cause issues with Bioinformatics
+    \usepackage[utf8]{inputenc} % allow utf-8 input
+    \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+    \usepackage{xcolor}
+    \usepackage{hyperref}       % hyperlinks
+    \usepackage{booktabs}       % professional-quality tables
+    \usepackage{graphicx}
+    \usepackage[square,numbers]{natbib}
+    \usepackage{array}          % for text wrap in appendix tables
+    \newcolumntype{L}{>{\centering\arraybackslash}m{3cm}}
+}
+\makeatother
+
+\makeatletter\renewcommand*{\fps@figure}{H}\makeatother
+\DeclareMathOperator*{\argmax}{argmax}
+\DeclareMathOperator*{\argmin}{argmin}
+\newcommand{\beginsupplement}{%
+        \setcounter{table}{0}
+        \renewcommand{\thetable}{S\arabic{table}}%
+        \setcounter{figure}{0}
+        \renewcommand{\thefigure}{S\arabic{figure}}%
+        \setcounter{section}{0}
+        \renewcommand{\thesection}{S\arabic{section}}%
+     }
+\newcommand{\pb}[1]{\textcolor{violet}{*** PB: #1}}
+\newcommand{\sd}[1]{\textcolor{red}{*** SD: #1}}
+\newcommand{\nh}[1]{\textcolor{blue}{*** NH: #1}}
+

@@ -1,0 +1,110 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HEADER FOR ARXIV/BIORXIV
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{article}
+\usepackage{arxiv}
+\input{_preamble}
+\title{Exploring High-Dimensional Biological Data with Sparse Contrastive
+Principal Component Analysis}
+\date{}
+\author{
+  Philippe Boileau \\
+  Graduate Group in Biostatistics,\\
+  University of California, Berkeley\\
+  \texttt{philippe\_boileau@berkeley.edu} \\
+   \And
+  Nima S.~Hejazi \\
+  Graduate Group in Biostatistics and\\
+  Center for Computational Biology,\\
+  University of California, Berkeley\\
+  \texttt{nhejazi@berkeley.edu} \\
+    \And
+  Sandrine Dudoit\\
+  Department of Statistics, \\
+  Division of Biostatistics, and\\
+  Center for Computational Biology,\\
+  University of California, Berkeley\\
+  \texttt{sandrine@stat.berkeley.edu} \\
+}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+  \input{abstract.tex}
+\end{abstract}
+
+\keywords{dimensionality reduction, principal component analysis, high-dimensional inference, sparsity, stability, unwanted variation, single-cell, genomics, computational biology}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HEADER FOR BIOINFORMATICS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\documentclass{bioinfo}
+%\copyrightyear{2020} \pubyear{2020}
+%\access{Advance Access Publication Date: Day Month Year}
+%\appnotes{Original Paper}
+
+%\input{_preamble}
+%\begin{document}
+%\firstpage{1}
+%\subtitle{Gene Expression}
+
+%\title[Sparse Contrastive Principal Component Analysis]{Exploring
+  %High-Dimensional Biological Data with Sparse Contrastive Principal Component
+  %Analysis}
+
+%\author[P.~Boileau \textit{et~al}.]{
+  %Philippe Boileau\,$^{\text{\sfb 1}*}$,
+  %Nima S.~Hejazi\,$^{\text{\sfb 1,4}}$,
+  %Sandrine Dudoit\,$^{\text{\sfb 2,3,4}}$}
+%\address{
+  %$^{\text{\sf 1}}$ Graduate Group in Biostatistics, University of California,
+    %Berkeley, 94720, USA\\
+  %$^{\text{\sf 2}}$ Division of Epidemiology \& Biostatistics, School of
+    %Public Health, University of California, Berkeley, 94720, USA\\
+  %$^{\text{\sf 3}}$ Department of Statistics, University of California,
+    %Berkeley, 94720, USA\\
+  %$^{\text{\sf 4}}$ Center for Computational Biology, University of California,
+    %Berkeley, 94720, USA
+%}
+
+%\corresp{$^\ast$Philippe Boileau, Graduate Group in Biostatistics, University
+  %of California, Berkeley; \texttt{philippe\_boileau@berkeley.edu}.}
+%\history{Received on XXXXX; revised on XXXXX; accepted on XXXXX}
+%\editor{Associate Editor: XXXXXXX}
+
+%\abstract{TO FILL IN}
+%\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Introduction}\label{intro}
+\input{intro.tex}
+
+\section{Methodology}\label{method}
+\input{methods.tex}
+
+\section{Results}\label{results}
+\input{results.tex}
+
+\section{Discussion}\label{discuss}
+\input{discussion.tex}
+
+%%TC:ignore
+\section*{Funding}
+\input{funding.tex}
+
+\section*{Acknowledgements}
+\input{acknowledgement.tex}
+
+\bibliographystyle{natbib}
+\bibliography{references}
+
+\newpage
+\section*{Supplementary Information}
+\beginsupplement
+
+\input{appendix.tex}
+%%TC:endignore
+
+\end{document}

@@ -1,0 +1,172 @@
+\subsection{Sparse Contrastive PCA}
+
+Given a pair of target and background datasets as defined in Section \ref{cpca},
+the scPCA procedure applies SPCA with minimal modifications to their contrastive covariance matrix $\mathbf{C}_\gamma$. The numerical solution to the SPCA criterion of Equation
+\eqref{eq:spca} is obtained by the following alternating algorithm
+until convergence of the sparse loadings \cite{Zou2006}:
+
+\textbf{For fixed} $\mathbf{A}$: For each $j$, let
+$Y_j \coloneqq \mathbf{C}_\gamma^{\frac{1}{2}}\alpha_j$, where $\alpha_j$ is
+the $j^{\text{th}}$ column of $\mathbf{A}$. Then, the elastic net solution for
+the $j^{\text{th}}$ loading vector is
+\begin{equation*}
+  \beta_j^\star = \argmin_{\beta_j} \lVert Y_j - \mathbf{C}_\gamma^{\frac{1}{2}}
+  \beta_j \rVert_2^2 + \lambda_0 \lVert \beta_j \rVert_2^2 + \lambda_{1, j}
+  \lVert \beta_j \rVert_1.
+\end{equation*}
+Generally, for ease of computation, $\lambda_{1, j} = \lambda_1$, for
+$j=1, \ldots, k$. The entries of the loadings matrix $\mathbf{B}$ are independent of
+the choice for the $\ell_2$ penalty (ridge) parameter $\lambda_0$
+\cite{Zou2006}, existing only to ensure the reconstruction of the sparse
+principal components. The ridge penalty is set to zero when
+$\mathbf{C}^{\frac{1}{2}}_\gamma$ is full rank; otherwise, a small constant
+value is used to remedy issues of indeterminacy that arise when fitting the
+elastic net. In fact, this was the original motivation
+behind the development of ridge regression \cite{Hoerl1970}.
+
+\textbf{For fixed} $\mathbf{B}$: Only the first term of the SPCA criterion of
+Equation \eqref{eq:spca} must be minimized with respect to $\mathbf{A}$. The
+solution is given by the reduced rank form of the Procrustes rotation, computed
+as $\mathbf{A}^\star = \mathbf{U}\mathbf{V}^\top$ \cite{Zou2006}. The matrices
+of left and right singular vectors are obtained from the following singular
+value decomposition:
+\begin{equation*}
+  \mathbf{C}_\gamma\mathbf{B} = \mathbf{U}\mathbf{D}\mathbf{V}^\top.
+\end{equation*}
+
+Generally, $\mathbf{C}_\gamma$ is not positive-semidefinite and its square root
+is undefined. Instead, a positive-semidefinite matrix
+$\widetilde{\mathbf{C}}_\gamma$, approximating $\mathbf{C}_\gamma$, is used.
+$\widetilde{\mathbf{C}}_\gamma$ is obtained by replacing the diagonal matrix in
+the eigendecomposition of $\mathbf{C}_\gamma$ by a diagonal matrix in which
+negative eigenvalues are replaced by zeros \cite{elasticnet}:
+\begin{align*}
+  \mathbf{C}_\gamma &= \mathbf{V}\mathbf{\Lambda}\mathbf{V}^\top \\
+  \widetilde{\mathbf{C}}_\gamma &= \mathbf{V}\mathbf{D}\mathbf{V}^\top \\
+\end{align*}
+\begin{equation*}
+\text{where } \text{D}_{ii} =
+  \begin{cases}
+    \Lambda_{ii}, & \text{if $\Lambda_{ii} > 0$} \\
+    0, & \text{otherwise}
+  \end{cases},
+  \qquad 
+  \text{for } i = 1, \ldots, p.
+\end{equation*}
+
+Thus, the directions of variation given by the negative eigenvalues of
+$\mathbf{C}_\gamma$ are discarded, as they correspond to those which are
+dominated by the variance in the background dataset. This procedure can be
+viewed as a preliminary thresholding of the eigenvectors of $\mathbf{C}_\gamma$,
+where the cutoff is an additional hyperparameter corresponding to a non-negative
+real number. Explicitly defining a small positive threshold may prove useful for
+datasets that possess many eigenvalues near zero, which correspond to sources of
+technical and biological noise remaining after the contrastive step.
+Empirically, however, providing a wide range of contrastive parameters $\gamma$
+in the hyperparameter space has been found to have a similar effect as using
+multiple cutoff values --- that is, larger values of $\gamma$ naturally produce
+sparser matrices $\widetilde{\mathbf{C}}_{\gamma}$.
+
+For the purpose of contrastive analysis, a direction's importance is
+characterized by its target-background variance coupling; higher target variance
+and lower background variance pairs produce the best directions \cite{Abid2018}
+and correspond to the largest positive eigenvalues. The elimination of directions with negative eigenvalues
+therefore guarantees that the sparse contrastive PCs (scPCs) are
+rotations of the target data relying on the sparse directions most
+variable in the target data but least variable in the background data, making
+a cutoff of zero a natural choice for the thresholding operation.
+
+\subsection{Framework for Hyperparameter Tuning}\label{hyp_tune}
+
+The scPCA algorithm relies on two hyperparameters: the contrastive parameter $\gamma$ and the $\ell_1$ penalty parameter $\lambda_1$. To select the optimal combination of $\gamma$ and $\lambda_1$ from a grid of \textit{a priori} specified values, we propose to cluster the $n$ observations of the target dataset based on their first k scPCs, selecting as optimal the combination $\{\gamma, \lambda_1\}$ producing the ``strongest'' cluster assignments. This framework casts the selection of $\{\gamma, \lambda_1\}$ in terms of a choice of clustering algorithm, distance metric (based on $\widetilde{\mathbf{C}}_{\gamma}$), and clustering strength criterion. For ease of application, we propose to select $\{\gamma, \lambda_1\}$ by maximization of the average silhouette width over clusterings of the reduced-dimension representation of the target data. This procedure implicitly requires the choice of a clustering algorithm, such as $k$-means~\cite{kmeans} or partitioning around medoids~\cite{pam}, to be applied to the representation of the data in the first $k$ scPCs. Such methods require an appropriate choice for the number of clusters, which we contend will generally not be a limiting factor in the use of scPCA. Indeed, reasonable choices for the number of clusters can often be inferred in \textit{omics} settings from sample annotation variables accompanying the data or from previously available biological knowledge. In Section~\ref{results}, we empirically demonstrate that the results of the algorithm are robust to the choice of the number of clusters. Additionally, scPCA has no particular dependence on average silhouette width as a criterion --- that is, alternative criteria for assessing clustering strength could be used when appropriate. %(e.g., when the data contains sub-clusters~\cite{Liu2010}).
+Naturally, this proposed hyperparameter tuning approach can be applied to cPCA by setting $\lambda_1$ to $0$.
+
+To address concerns of overfitting and to avoid discovering non-generalizable patterns from the data, we propose the use of cross-validation. For a grid of \textit{a priori} specified contrastive parameters $\gamma$ and $\ell_1$ penalty parameters $\lambda_1$, $V$-fold cross-validation may be performed as follows:
+\begin{enumerate}
+  \itemsep0pt
+  \item Partition each of the target and     
+     background datasets into $V$ roughly
+     equally-sized subsets.
+   \item Randomly pair each of the target dataset's $V$ subsets with one of the
+     background's; these pairs form the fold-specific data for cross-validation.
+   \item Iteratively perform scPCA over the 
+     observations of the target and
+     background data not contained in the holdout set (i.e., the training set)
+     for each pair of contrastive parameters and $\ell_1$ penalty parameters in
+     the hyperparameter grid.
+  \item Project the holdout target data onto the    low-dimensional space using
+     the loadings matrices obtained from the previous step.
+  \item Compute a clustering strength criterion (e.g., average
+  silhouette width) for a clustering of the target holdout data with the \textit{a priori}
+  specified number of clusters.
+  \item Finally, compute the cross-validated average of the clustering
+  strength criteria (e.g., cross-validated average of average silhouette width)
+  across the holdout sets for each pair of hyperparameters, selecting the
+  pairing that maximizes the value of the criterion.
+\end{enumerate}
+
+\subsection{Algorithm and Software Implementation}
+
+The implementation of the scPCA algorithm is summarized in
+Algorithm~\ref{algo1}. A free and open-source software implementation of scPCA is
+available in the \texttt{scPCA} package for the \texttt{R} language and
+environment for statistical computing~\cite{R}. The \texttt{scPCA} package is available as of a recent release of the Bioconductor Project
+\cite{gentleman2004bioconductor,gentleman2006bioinformatics,huber2015orchestrating} (\url{https://bioconductor.org/packages/scPCA}).
+
+\begin{algorithm}[!htbp]\label{algo1}
+  \dontprintsemicolon
+  %\setalgolined
+  \linesnotnumbered
+  \KwResult{Produces a sparse low-dimensional representation of the target data,
+    $\mathbf{X}_{n \times p}$, by contrasting the variation of
+    $\mathbf{X}_{n \times p}$ and some background data, $\mathbf{Y}_{m \times p}$,
+    while applying an $\ell_1$ penalty to the loadings generated by cPCA.}
+  \SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
+  \Input{
+  \begin{itemize}
+    \item[] target dataset: $\mathbf{X}$
+    \item[] background dataset: $\mathbf{Y}$
+    \item[] binary variable indicating whether to column-scale the data: \texttt{scale}
+    \item[] vector of possible contrastive parameters: $\gamma = (\gamma_1, \ldots, \gamma_s)$
+    \item[] vector of possible $\ell_1$ penalty parameters: $\lambda_1 = (\lambda_{1,1}, \ldots, \lambda_{1, d})$
+    \item[] number of sparse contrastive principal components to compute: $k$
+    \item[] clustering method: \texttt{cluster\_meth}
+    \item[] number of clusters: \texttt{ncluster}
+  \end{itemize}
+  }
+  \BlankLine
+  Center (and \texttt{scale} if so desired) the columns of $\mathbf{X}$, $\mathbf{Y}$ \;
+  Calculate the empirical covariance matrices:
+  $\mathbf{C_X}_{p \times p} \coloneqq \frac{1}{n}\mathbf{X}^\top\mathbf{X}, \;
+  \mathbf{C_Y}_{p \times p} \coloneqq \frac{1}{m}\mathbf{Y}^\top\mathbf{Y}$\;
+  \For{each $\gamma_i \in \gamma$}{
+    \For{each $\lambda_{1,j} \in \lambda_1$}{
+      Compute the contrastive covariance matrix $\mathbf{C}_{\gamma_i}=\mathbf{C_X} -
+      \gamma_i \mathbf{C_Y}$\;
+      Compute the positive-semidefinite approximation of $\mathbf{C}_{\gamma_i}$, $\widetilde{\mathbf{C}}_{\gamma_i}$\;
+      Apply SPCA to $\widetilde{\mathbf{C}}_{\gamma_i}$ for $k$ components with $\ell_1$ penalty $\lambda_{1, j}$\;
+      Generate a low-dimensional representation by projecting $\mathbf{X}_{n \times p}$ on the sparse loadings of SPCA\;
+      Normalize the low-dimensional representation produced to be on the unit hypercube\;
+      Cluster the normalized low-dimensional representation using \texttt{cluster\_meth} with \texttt{ncluster}\;
+      Compute and record the clustering strength criterion associated with
+      $(\gamma_i, \lambda_{1, j})$ \;
+    }
+  }
+  Identify the combination of hyperparameters maximizing the clustering strength
+  criterion: $\gamma^{\star},\: \lambda_1^{\star}$ \;
+  \Output{The low-dimensional representation of the target data given by
+    $(\gamma^{\star}, \lambda_1^{\star})$, an $n \times k$ matrix;
+    the $p \times k$ matrix of loadings given by
+    $(\gamma^{\star}, \lambda_1^{\star})$;
+    contrastive parameter $\gamma^{\star}$;
+    $\ell_1$ penalty parameter $\lambda_1^{\star}$
+  }
+  \caption{scPCA}
+\end{algorithm}
+
+For ease of notation, Algorithm~\ref{algo1} introduces scPCA without the application of cross-validation to the target and background datasets. Algorithm~\ref{algo2},
+in the supplementary materials, details the cross-validated variant.
+
+The code and data used to generate this manuscript are publicly available on
+GitHub (\url{https://github.com/PhilBoileau/EHDBDscPCA}).
+\FloatBarrier
