@@ -1,3 +1,11 @@
+\documentclass{article}
+\usepackage{arxiv}
+\input{_preamble}
+\externaldocument{main}
+\begin{document}
+\beginsupplement
+\section*{Supplementary Information}
+
 \section{Algorithm for Cross-Validated scPCA}
 
 \begin{algorithm}[!htbp]\label{algo2}
@@ -88,7 +96,7 @@ $\mathbf{Y}_{\mathcal{T}_v^y}$ the $\left(m - \lvert \mathcal{T}_v^y \rvert\righ
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/cpca_example_plot.png}
+    \includegraphics[width=0.9\textwidth]{figures/cpca_example_plot}
     \caption{
     {\em Effect of contrastive parameter for cPCA.}
     cPCA as implemented by Abid et al. was applied to a simulated dataset of $n=400$ observations, split across 4 groups, with $p=30$ variables. The first 10 variables are distributed as $N(0, 10)$ for all observations. Variables 11
@@ -122,7 +130,7 @@ for information on the simulation model and dataset.
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/sim_de_genes.png}
+    \includegraphics[width=0.9\textwidth]{figures/sim_de_genes}
     \caption{{\em Simulated scRNA-seq data: Differential expression.}
     The 98 differentially expressed genes in the simulated target dataset are ranked in decreasing order of their absolute level of differential expression between groups. In the \textit{Splatter} framework, genes are differentially expressed between groups by way of a group-specific multiplicative factor. Thus, the level of differential expression of any gene between two groups may be computed as the absolute value of the difference between each groups multiplicative factor. We find that all 20 of the genes with non-zero entries in scPCA's first loading vector, highlighted in green, are among the most differentially expressed.}
     \label{fig:sim_de_genes}
@@ -130,7 +138,7 @@ for information on the simulation model and dataset.
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/technical_effect_removal_sim.png}
+    \includegraphics[width=0.9\textwidth]{figures/technical_effect_removal_sim}
     \caption{{\em Simulated scRNA-seq data: Average silhouette width comparison.}
     scPCA produces the densest biological clusters with the least amount of technical noise. The ZINB-WaVE method, when taking into account the batch effect, has a similar performance to scPCA with respect to the removal of unwanted effects, though the biological clusters it produces have lower average silhouette widths. Though cPCA produces denser biological clusters than ZINB-WaVE, it fails to completely remove the batch effect. The remaining methods are unable to disentangle the biological and technical effects. 
     }
@@ -146,7 +154,7 @@ for information on the data.
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.5\textwidth]{figures/dengue_tsne.png}
+    \includegraphics[width=0.5\textwidth]{figures/dengue_tsne}
     \caption{
     {\em Dengue microarray data: t-SNE.}
     Similarly to UMAP, t-SNE almost completely separates the convalescent patients from those with some form of dengue. The two main clusters are further split into distinct sub-clusters, perhaps indicating the presence of a batch effect. 
@@ -231,7 +239,7 @@ for information on the data.
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/dengue_cpca_centers.png}
+    \includegraphics[width=0.9\textwidth]{figures/dengue_cpca_centers}
     \caption{
     {\em Dengue microarray data: cPCA.}
     When varying the \textit{a priori} specified number of clusters for cPCA, all four embeddings are virtually identical, suggesting that optimal contrastive parameters were selected in each case. Thus, cPCA is robust to misspecifications of the number of clusters.}
@@ -240,7 +248,7 @@ for information on the data.
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/dengue_scpca_centers.png}
+    \includegraphics[width=0.9\textwidth]{figures/dengue_scpca_centers}
     \caption{
     {\em Dengue microarray data: scPCA.}
     When varying the \textit{a priori} specified number of clusters for scPCA, we find that the two-dimensional embeddings are sensitive to this choice. When scPCA is performed on this data with four and five clusters, the results resemble those produced by PCA.}
@@ -258,7 +266,7 @@ for information on the data.
 
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/aml027_results.png}
+  \includegraphics[width=0.9\textwidth]{figures/aml027_results}
   \caption{{\em AML Patient 027 scRNA-seq data.} The two-dimensional embeddings of the patient's BMMC cells produced by PCA, ZINB-WaVE, t-SNE, UMAP, cPCA, and scPCA. cPCA and scPCA produce two-dimensional representations that distinguish between the pre- and post-transplant cells of Patient 027. Although cPCA's embedding contains denser clusters, scPCA's clusters are more distinct --- though they are oddly shaped. This is the result of sparsity: the scPCA embedding is produced with the count data of only three genes.}
   \label{fig:comp_leuk_pat2}
 \end{figure}
@@ -272,7 +280,7 @@ Ahmed et al. \citeSM{Ahmed2015} analyzed protein expression in the hippocampus a
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/mice_exp_design.png}
+    \includegraphics[width=0.9\textwidth]{figures/mice_exp_design}
     \caption{
     {\em Mouse protein expression data: Experimental design.} 
     The control dataset is comprised of protein expression measurements for 15 technical replicates from each of 9 control mice subject to context fear conditioning and given a placebo (red leaf). The target dataset consists of protein expression measurements for 15 technical replicates from each of 9 control mice not subject to context fear condition and given a placebo (purple leaf) and 15 technical replicates from each of 9 trisomic mice not subject to context fear condition and given a placebo (green leaf).}
@@ -285,14 +293,14 @@ PCA proved incapable of distinguishing between the biological groups of interest
 
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/mice_results.png}
+  \includegraphics[width=0.9\textwidth]{figures/mice_results}
   \caption{{\em Mouse protein expression data.} \textbf{A} All methods but PCA were capable of separating the control from the trisomic mice, though it is unclear why UMAP splits the Ts65Dn mice into two distinct groups. scPCA's low-dimensional representation of the protein expression data is markedly similar to that of cPCA, up to a rotation, despite relying on only a fraction of non-zero values in the loadings matrix. On average, scPCA also produces the tightest clusters. Note: a small group of control mice were clustered with the trisomic mice in the UMAP, cPCA, and scPCA representation, potentially comprising a group of mislabeled mice. \textbf{B} scPCA's leading vectors of loadings are much sparser than those of cPCA, increasing the interpretability of findings and clarity of the visualization. The differing rotations of cPCA and scPCA, in addition to the drastically different weighting scheme of the proteins in their respective loadings matrices, may indicate that the contrastive step performed by cPCA does not sufficiently dampen spurious sources of variation in the data.}
   \label{fig:comp_mice}
 \end{figure}
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.5\textwidth]{figures/mice_tsne.png}
+    \includegraphics[width=0.5\textwidth]{figures/mice_tsne}
     \caption{
     \textit{Mouse protein expression data: t-SNE.}
     t-SNE produces almost linearly-separable clusters, though these clusters contain many fractured, spurious sub-clusters that do not relate to biological signal.
@@ -302,7 +310,7 @@ PCA proved incapable of distinguishing between the biological groups of interest
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/mice_cpca_centers.png}
+    \includegraphics[width=0.9\textwidth]{figures/mice_cpca_centers}
     \caption{
     \textit{Mouse protein expression data: cPCA.}
     When varying the \textit{a priori} specified number of clusters for cPCA, we find that the two-dimensional embedding is once again robust to misspecifications.
@@ -312,7 +320,7 @@ PCA proved incapable of distinguishing between the biological groups of interest
 
 \begin{figure}[!htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/mice_scpca_centers.png}
+    \includegraphics[width=0.9\textwidth]{figures/mice_scpca_centers}
     \caption{
     \textit{Mouse protein expression data: scPCA.}
     Unlike with the dengue microarray data, when varying the \textit{a priori} specified number of clusters for scPCA, we find that the two-dimensional embedding is robust to misspecifications. This may indicate that the sensitivity of the method to this tuning parameter is data-dependent.
@@ -366,3 +374,8 @@ PCA proved incapable of distinguishing between the biological groups of interest
  \hline
  \end{longtable}
  
+\newpage
+\bibliographystyleSM{natbib}
+\bibliographySM{references}
+
+ \end{document}

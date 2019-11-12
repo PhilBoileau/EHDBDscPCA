@@ -2,15 +2,13 @@ In the sequel, we detail the application of scPCA to a number of simulated and p
 
 \subsection{Simulated scRNA-seq Data}\label{sim_scRNA-seq}
 
-The scPCA technique was tested on a simulated scRNA-seq dataset generated with the \textit{Splat} framework from the \texttt{Splatter} \texttt{R} package  \cite{Zappia2017}. \textit{Splat} simulates a scRNA-seq count matrix by way of a gamma-Poisson hierarchical model. 
-%where the mean expression level of gene $j,\; j = 1, \ldots, p$, is sampled from a gamma distribution, and the count $x_{i, j}$ of cell $i, \; i = 1, \ldots, n$ for gene $j$ is sampled from a Poisson distribution with mean equal to the mean expression level across all $j$ genes .
-This simulation framework mimics real scRNA-seq data by including hyperparameters to control the number of over- and under-expressed genes (using multiplicative factors for mean expression levels), zero inflation, batch effects, and other technical and biological factors unique to scRNA-seq data.
+The scPCA technique was tested on a simulated scRNA-seq dataset generated with the \textit{Splat} framework from the \texttt{Splatter} \texttt{R} package  \cite{Zappia2017}. \textit{Splat} simulates a scRNA-seq count matrix by way of a gamma-Poisson hierarchical model. This simulation framework mimics real scRNA-seq data by including hyperparameters to control the number of over- and under-expressed genes (using multiplicative factors for mean expression levels), zero inflation, batch effects, and other technical and biological factors unique to scRNA-seq data.
 
 A simple dataset of 300 cells and 500 genes was simulated such that the cells were approximately evenly distributed among three biological groups: two groups making up a target dataset, and a third group corresponding to a background dataset. 5\% of the genes are differentially expressed between the background dataset and each of the two target datasets but not between the two target datasets, 10\% of the genes are differentially expressed between the background dataset and the first target dataset but not the second target dataset, and 10\% of the genes are differentially expressed between the background dataset and the second target dataset but not the first target dataset. There is overlap between these three sets of genes and, in particular, a total of 98 genes are differentially expressed between the two target datasets. Based on these levels of differential expression, cells are more dissimilar between the two target datasets than between either of the target datasets and the background dataset. Therefore, the samples comprising the background dataset can be viewed as a set of controls for use by cPCA and scPCA. Additionally, a large batch effect was included to confound the biological variation between groups, effectively dividing each biological group into two subgroups of equal size (fig.~\ref{fig:sim}A).
 
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width = \textwidth]{figures/sim_results.png}
+  \includegraphics[width = \textwidth]{figures/sim_results}
   \caption{
   {\em Simulated scRNA-seq data.}
   \textbf{A} Plot of the first two principal components of the complete simulated dataset (i.e., the combination of the target and background datasets). The batch effect and the biological signal are responsible for approximately identical amounts of variance. \textbf{B} The two-dimensional representations of the target dataset by t-SNE, UMAP, cPCA, scPCA, and ZINB-WaVE, with accompanying average silhouette widths quantifying the strengths of the batch effect and the biological signal. Only scPCA fully removes the batch effect in two dimensions when batches are not adjusted for explicitly. \textbf{C} A gene-by-gene comparison of the relative absolute weights in the first loading vectors of cPCA and scPCA, in decreasing order with respect to the values produced by cPCA.}
@@ -37,7 +35,7 @@ scPCA's results were also compared to those of the two leading latent factors fo
 As part of data pre-processing, all but the 500 most variable genes were filtered out. The target dataset consists of the log-transformed microarray expression measures of 47 patients with some form of dengue, while the background dataset consist of the log-transformed microarray expression measures of the control samples. PCA, cPCA, scPCA, t-SNE, and UMAP were then applied to the column-centered matrix of the target data with the goal of discerning three unique clusters (fig.~\ref{fig:dengue}A), one for each sub-class of dengue (DF, DHF, and convalescent). cPCA and scPCA took as additional input the column-centered background dataset and specified three clusters \textit{a priori}. t-SNE's embedding was found to be similar to UMAP's and is therefore only included in the supplementary materials (fig.~\ref{fig:dengue_tsne}).
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width = 0.9\textwidth]{figures/dengue_results.png}
+  \includegraphics[width = 0.9\textwidth]{figures/dengue_results}
   \caption{
   {\em Dengue microarray data.}
   \textbf{A} Two-dimensional representations of the target dataset by PCA, UMAP, cPCA, and scPCA, with accompanying average silhouette widths quantifying the strengths of the biological signal.  cPCA and scPCA are the only methods that fully separate the convalescent patients from those with DF and DHF. The second PC of the PCA plot is dominated by some batch effect, and the low-dimensional representation produced by UMAP also appears to be affected by some source of unwanted variation. \textbf{B} The relative absolute weights in the two leading loading vectors of scPCA are much sparser than those of cPCA, though their two-dimensional embeddings are virtually identical. The genes are in decreasing order of cPCA's relative absolute weights, demonstrating that the genes with non-zero weights in scPCA's loadings generally correspond to the those genes with the largest absolute weights in cPCA's loadings. This is much more apparent in the second loadings vector where the distribution of cPCA's absolute weights has a thin tail, attributing increased importance to a small subset of genes.}
@@ -58,7 +56,7 @@ Of the six dimensionality reduction methods applied to Patient 035's data (fig.~
 
 \begin{figure}[!htbp]
   \centering
-  \includegraphics[width=0.9\textwidth]{figures/aml035_results.png}
+  \includegraphics[width=0.9\textwidth]{figures/aml035_results}
   \caption{{\em AML Patient 035 scRNA-seq data.} 
   \textbf{A} The two-dimensional embeddings of the patient's BMMC cells produced by PCA, ZINB-WaVE, t-SNE, UMAP, cPCA, and scPCA, with accompanying average silhouette widths quantifying the strengths of the biological signal. cPCA and scPCA produce representations of the data in which the pre- and post-transplant cells form discernible clusters. Based on visual inspection and average silhouette width, scPCA's grouping of pre-transplant cells is denser than that of cPCA's and the opposite is true of the post-transplant cells' cluster. \textbf{B} scPCA's embedding is much sparser, increasing interpretability of the exploratory analysis.}
   \label{fig:comp_leuk_pat1}
