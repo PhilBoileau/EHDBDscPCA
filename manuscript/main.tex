@@ -1,81 +1,85 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % HEADER FOR ARXIV/BIORXIV
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\documentclass{article}
-\usepackage{arxiv}
+% \documentclass{article}
+% \usepackage{arxiv}
+% \input{_preamble}
+% \title{Exploring High-Dimensional Biological Data with Sparse Contrastive
+% Principal Component Analysis}
+
+% \author{
+%   Philippe Boileau \\
+%   Graduate Group in Biostatistics,\\
+%   University of California, Berkeley\\
+%   \texttt{philippe\_boileau@berkeley.edu} \\
+%   \And
+%   Nima S.~Hejazi \\
+%   Graduate Group in Biostatistics and\\
+%   Center for Computational Biology,\\
+%   University of California, Berkeley\\
+%   \texttt{nhejazi@berkeley.edu} \\
+%     \And
+%   Sandrine Dudoit\\
+%   Department of Statistics, \\
+%   Division of Biostatistics, and\\
+%   Center for Computational Biology,\\
+%   University of California, Berkeley\\
+%   \texttt{sandrine@stat.berkeley.edu} \\
+% }
+
+% \begin{document}
+% \maketitle
+
+% \begin{abstract}
+%   \input{abstract.tex}
+% \end{abstract}
+
+% \keywords{dimensionality reduction, principal component analysis, high-dimensional inference, sparsity, stability, unwanted variation, single-cell, genomics, computational biology}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% HEADER FOR BIOINFORMATICS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\documentclass{bioinfo}
+\copyrightyear{2020} \pubyear{2020}
+\access{Advance Access Publication Date: Day Month Year}
+\appnotes{Original Paper}
+
 \input{_preamble}
-\externaldocument{appendix}
-\title{Exploring High-Dimensional Biological Data with Sparse Contrastive
-Principal Component Analysis}
-\date{}
-\author{
-  Philippe Boileau \\
-  Graduate Group in Biostatistics,\\
-  University of California, Berkeley\\
-  \texttt{philippe\_boileau@berkeley.edu} \\
-   \And
-  Nima S.~Hejazi \\
-  Graduate Group in Biostatistics and\\
-  Center for Computational Biology,\\
-  University of California, Berkeley\\
-  \texttt{nhejazi@berkeley.edu} \\
-    \And
-  Sandrine Dudoit\\
-  Department of Statistics, \\
-  Division of Biostatistics, and\\
-  Center for Computational Biology,\\
-  University of California, Berkeley\\
-  \texttt{sandrine@stat.berkeley.edu} \\
+\begin{document}
+\firstpage{1}
+\subtitle{Gene Expression}
+
+\title[Sparse Contrastive Principal Component Analysis]{Exploring
+  High-Dimensional Biological Data with Sparse Contrastive Principal Component
+  Analysis}
+
+\author[P.~Boileau \textit{et~al}.]{
+  Philippe Boileau\,$^{\text{\sfb 1}*}$,
+  Nima S.~Hejazi\,$^{\text{\sfb 1,4}}$,
+  Sandrine Dudoit\,$^{\text{\sfb 2,3,4}}$}
+\address{
+  $^{\text{\sf 1}}$ Graduate Group in Biostatistics, University of California,
+    Berkeley, 94720, USA\\
+  $^{\text{\sf 2}}$ Division of Epidemiology \& Biostatistics, School of
+    Public Health, University of California, Berkeley, 94720, USA\\
+  $^{\text{\sf 3}}$ Department of Statistics, University of California,
+    Berkeley, 94720, USA\\
+  $^{\text{\sf 4}}$ Center for Computational Biology, University of California,
+    Berkeley, 94720, USA
 }
 
-\begin{document}
+\corresp{$^\ast$Philippe Boileau, Graduate Group in Biostatistics, University
+  of California, Berkeley; \texttt{philippe\_boileau@berkeley.edu}.}
+\history{Received on XXXXX; revised on XXXXX; accepted on XXXXX}
+\editor{Associate Editor: XXXXXXX}
+
+\abstract{
+\textbf{Motivation:} Statistical analyses of high-throughput sequencing data have re-shaped the biological sciences. In spite of myriad advances, recovering interpretable biological signal from data corrupted by technical noise remains a prevalent open problem. Several classes of procedures, among them classical dimensionality reduction techniques, and others incorporating subject-matter knowledge, have provided effective advances; however, no procedure currently satisfies the dual objectives of recovering stable and relevant features simultaneously. \newline
+\textbf{Results:} Inspired by recent proposals for making use of control data in the removal of unwanted variation, we propose a variant of principal component analysis that extracts sparse, stable, interpretable, and relevant biological signal. The new methodology is compared to competing
+dimensionality reduction approaches through a simulation study as well as via analyses of several publicly available protein expression, microarray gene expression, and single-cell transcriptome sequencing datasets. \newline
+\textbf{Availability:} A free and open-source software implementation of the methodology, the \texttt{scPCA} \texttt{R} package, is made available via the \href{https://bioconductor.org/packages/release/bioc/html/scPCA.html}{Bioconductor} Project. Code for all analyses presented in the paper are also made available via \href{https://github.com/PhilBoileau/EHDBDscPCA}{GitHub}.
+}
 \maketitle
-
-\begin{abstract}
-  \input{abstract.tex}
-\end{abstract}
-
-\keywords{dimensionality reduction, principal component analysis, high-dimensional inference, sparsity, stability, unwanted variation, single-cell, genomics, computational biology}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% HEADER FOR BIOINFORMATICS
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\documentclass{bioinfo}
-%\copyrightyear{2020} \pubyear{2020}
-%\access{Advance Access Publication Date: Day Month Year}
-%\appnotes{Original Paper}
-
-%\input{_preamble}
-%\begin{document}
-%\firstpage{1}
-%\subtitle{Gene Expression}
-
-%\title[Sparse Contrastive Principal Component Analysis]{Exploring
-  %High-Dimensional Biological Data with Sparse Contrastive Principal Component
-  %Analysis}
-
-%\author[P.~Boileau \textit{et~al}.]{
-  %Philippe Boileau\,$^{\text{\sfb 1}*}$,
-  %Nima S.~Hejazi\,$^{\text{\sfb 1,4}}$,
-  %Sandrine Dudoit\,$^{\text{\sfb 2,3,4}}$}
-%\address{
-  %$^{\text{\sf 1}}$ Graduate Group in Biostatistics, University of California,
-    %Berkeley, 94720, USA\\
-  %$^{\text{\sf 2}}$ Division of Epidemiology \& Biostatistics, School of
-    %Public Health, University of California, Berkeley, 94720, USA\\
-  %$^{\text{\sf 3}}$ Department of Statistics, University of California,
-    %Berkeley, 94720, USA\\
-  %$^{\text{\sf 4}}$ Center for Computational Biology, University of California,
-    %Berkeley, 94720, USA
-%}
-
-%\corresp{$^\ast$Philippe Boileau, Graduate Group in Biostatistics, University
-  %of California, Berkeley; \texttt{philippe\_boileau@berkeley.edu}.}
-%\history{Received on XXXXX; revised on XXXXX; accepted on XXXXX}
-%\editor{Associate Editor: XXXXXXX}
-
-%\abstract{TO FILL IN}
-%\maketitle
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

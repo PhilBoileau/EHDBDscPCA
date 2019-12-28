@@ -1,4 +1,4 @@
-In the sequel, we detail the application of scPCA to a number of simulated and publicly available datasets, comparing our proposal to several competing techniques. An additional analysis of protein expression data is presented in Section \ref{sup_mice}.
+%In the sequel, we detail the application of scPCA to a number of simulated and publicly available datasets, comparing our proposal to several competing techniques. An additional analysis of protein expression data is presented in Section \ref{sup_mice}.
 
 \subsection{Simulated scRNA-seq Data}\label{sim_scRNA-seq}
 
@@ -6,14 +6,14 @@ The scPCA technique was tested on a simulated scRNA-seq dataset generated with t
 
 A simple dataset of 300 cells and 500 genes was simulated such that the cells were approximately evenly distributed among three biological groups: two groups making up a target dataset, and a third group corresponding to a background dataset. 5\% of the genes are differentially expressed between the background dataset and each of the two target datasets but not between the two target datasets, 10\% of the genes are differentially expressed between the background dataset and the first target dataset but not the second target dataset, and 10\% of the genes are differentially expressed between the background dataset and the second target dataset but not the first target dataset. There is overlap between these three sets of genes and, in particular, a total of 98 genes are differentially expressed between the two target datasets. Based on these levels of differential expression, cells are more dissimilar between the two target datasets than between either of the target datasets and the background dataset. Therefore, the samples comprising the background dataset can be viewed as a set of controls for use by cPCA and scPCA. Additionally, a large batch effect was included to confound the biological variation between groups, effectively dividing each biological group into two subgroups of equal size (fig.~\ref{fig:sim}A).
 
-\begin{figure}[!htbp]
+\begin{figure*}[!htbp]
   \centering
   \includegraphics[width = \textwidth]{figures/sim_results}
   \caption{
   {\em Simulated scRNA-seq data.}
   \textbf{A} Plot of the first two principal components of the complete simulated dataset (i.e., the combination of the target and background datasets). The batch effect and the biological signal are responsible for approximately identical amounts of variance. \textbf{B} The two-dimensional representations of the target dataset by t-SNE, UMAP, cPCA, scPCA, and ZINB-WaVE, with accompanying average silhouette widths quantifying the strengths of the batch effect and the biological signal. Only scPCA fully removes the batch effect in two dimensions when batches are not adjusted for explicitly. \textbf{C} A gene-by-gene comparison of the relative absolute weights in the first loading vectors of cPCA and scPCA, in decreasing order with respect to the values produced by cPCA.}
   \label{fig:sim}
-\end{figure}
+\end{figure*}
 
 PCA, t-SNE, UMAP, cPCA, and scPCA were applied to the log-transformed and column-centered target data to determine whether these methods could identify the biological signal of interest, i.e., the two groups in the target dataset (fig.~\ref{fig:sim}B, n.b., PCA was not included due to the similarity of results to fig.~\ref{fig:sim}A). We note that cPCA was not performed in the traditional manner of \citet{Abid2018}, but with automatic hyperparameter selection as described in Section \ref{hyp_tune}. The number of \textit{a priori} specified clusters for the cPCA and scPCA methods was set to 2, and the column-centered background data were used in their contrastive steps. While PCA, t-SNE, UMAP, and cPCA were incapable of completely eliminating the batch effect in their two-dimensional representations, scPCA successfully removed the unwanted variation while producing the tightest clusters, as indicated by the average silhouette widths (see also fig.~\ref{fig:ave_sil_widths}), and generating sparse, interpretable loadings.
 
@@ -26,41 +26,39 @@ Juxtaposing the relative absolute weights of the first loadings vectors produced
 
 scPCA's results were also compared to those of the two leading latent factors found by ZINB-WaVE, a method of choice for dimensionality reduction for scRNA-seq data, under conditions in which the batch factor is viewed as known and unknown (fig.~\ref{fig:sim}B). In both cases, ZINB-WaVE was applied to the count matrix of the simulated target dataset with no gene-level covariates. When the batch factor was treated as unknown, no cell-level covariates were included in the model; however, when we treated the batch factor as known, a binary cell-level covariate was added to indicate each sample's batch membership. When the source of unwanted variation is not explicitly regressed out in the ZINB-WaVE model, we find the results to be virtually identical to those of PCA. Even when the batch effect is included in the model, the clusters of the biological groups are elongated and less dense than those produced by scPCA, and the first latent factor does not linearly separate the groups.
 
-\FloatBarrier
 
 \subsection{Dengue Microarray Data}\label{dengue_data}
 
 \citet{Kwissa2014} used gene expression microarrays to analyze the whole-blood transcriptome of 47 dengue patients hospitalized at the Siriraj Hospital in Bangkok and 9 local healthy controls. Of the affected patients, 18 were classified as having acute dengue fever (DF), 10 as having acute dengue hemorrhagic fever (DHF), and 19 as convalescent at least four weeks after discharge.
 
 As part of data pre-processing, all but the 500 most variable genes were filtered out. The target dataset consists of the log-transformed microarray expression measures of 47 patients with some form of dengue, while the background dataset consist of the log-transformed microarray expression measures of the control samples. PCA, cPCA, scPCA, t-SNE, and UMAP were then applied to the column-centered matrix of the target data with the goal of discerning three unique clusters (fig.~\ref{fig:dengue}A), one for each sub-class of dengue (DF, DHF, and convalescent). cPCA and scPCA took as additional input the column-centered background dataset and specified three clusters \textit{a priori}. t-SNE's embedding was found to be similar to UMAP's and is therefore only included in the supplementary materials (fig.~\ref{fig:dengue_tsne}).
-\begin{figure}[!htbp]
+\FloatBarrier
+\begin{figure*}[!htbp]
   \centering
   \includegraphics[width = 0.9\textwidth]{figures/dengue_results}
   \caption{
   {\em Dengue microarray data.}
   \textbf{A} Two-dimensional representations of the target dataset by PCA, UMAP, cPCA, and scPCA, with accompanying average silhouette widths quantifying the strengths of the biological signal.  cPCA and scPCA are the only methods that fully separate the convalescent patients from those with DF and DHF. The second PC of the PCA plot is dominated by some batch effect, and the low-dimensional representation produced by UMAP also appears to be affected by some source of unwanted variation. \textbf{B} The relative absolute weights in the two leading loading vectors of scPCA are much sparser than those of cPCA, though their two-dimensional embeddings are virtually identical. The genes are in decreasing order of cPCA's relative absolute weights, demonstrating that the genes with non-zero weights in scPCA's loadings generally correspond to the those genes with the largest absolute weights in cPCA's loadings. This is much more apparent in the second loadings vector where the distribution of cPCA's absolute weights has a thin tail, attributing increased importance to a small subset of genes.}
   \label{fig:dengue}
-\end{figure}
+\end{figure*}
 
 Of the four dimensionality reduction methods, only cPCA and scPCA successfully fully separated the convalescent patients from those with DF and DHF in two dimensions. scPCA's low-dimensional representation was virtually identical to that of cPCA, producing very similar average silhouette widths among classes, though only a tenth of the genes have non-zero values in the first and second columns of the loadings matrix, and the most important genes identified by each methods' first loading differ substantially (fig.~\ref{fig:dengue}B). The genes found by scPCA include CD38, HLA-DQB1, and RSAD2 (Viperin), which have been previously associated to the susceptibility to, protection against, or presence of dengue \cite{Castaneda2016,Cardozo2014,Fitzgerald2011}. For a full list of these genes, refer to Table \ref{tab:dengue_1} and Table \ref{tab:dengue_2}. 
 
 No method successfully distinguished between the three sub-classes of dengue. In fact, previous research suggests that the transcriptome of patients with DF and DHF are virtually indistinct \cite{Kwissa2014}. Instead, \citet{Kwissa2014} found that DF and DHF patients may form distinct clusters based on viral load and concentration of the DENV NS-1 antigen in their plasma. This may explain the sub-clusters within the DF and DHF cases found by UMAP. Though the number of pre-specified clusters for each algorithm was set to three, cPCA's and scPCA's projections onto two dimensions contain two clusters. To test the sensitivity of these methods to this tuning parameter, both methods were reapplied to the data with varying numbers of pre-specified clusters. Each of cPCA's iteration produced virtually identical embeddings (fig.~\ref{fig:dengue_cpca_centers}). However, scPCA's produced identical results to those of PCA when the number of clusters was set to four or higher (fig.~\ref{fig:dengue_scpca_centers}). This may provide an empirical approach to selecting the appropriate number of clusters for scPCA, i.e., selecting the largest value before which the quality of the embedding deteriorates.
 
-\FloatBarrier
 
 \subsection{Leukemia Patient scRNA-seq Data}\label{leukemia_data}
 
 Finally, we tested scPCA on scRNA-seq data from the cryopreserved bone marrow mononuclear cell (BMMC) samples of two acute myeloid leukemia (AML) patients (Patient 035: 4,501 cells; Patient 027: 7,898 cells), before and after undergoing allogeneic hematopoietic stem cell transplant treatment \cite{Zheng2017}. The BMMCs of two healthy individuals from the same publicly available dataset (Healthy 1: 1,985 cells; Healthy 2: 2,472 cells) were used to generate a control dataset. Following pre-processing, all but the 1,000 most variable genes measured across all 16,856 cells were removed. The scRNA-seq data from the AML patients were then split into separate target datasets since \citet{Zheng2017} found evidence of distinct subpopulation membership following transplantation. Data belonging to the healthy controls were combined to create the background dataset. PCA, t-SNE, UMAP, ZINB-WaVE, cPCA, and scPCA were applied to the target datasets to explore differences in the AML patients' BMMCs's transcriptome engendered by the treatment (fig.~\ref{fig:comp_leuk_pat1}, \ref{fig:comp_leuk_pat2}).
 
 Of the six dimensionality reduction methods applied to Patient 035's data (fig.~\ref{fig:comp_leuk_pat1}A), cPCA and scPCA best capture the biologically meaningful information relating to treatment status. Each produces linearly separable clusters corresponding to pre- and post-treatment cells; scPCA's projection yields a tighter cluster of pre-transplant cells when compared to that produced by cPCA, and the opposite is true regarding the clusters of post-transplant cells. Additionally, scPCA's projection required considerably less information even though its results are analogous to cPCA's: 176 genes and 17 genes have non-zero entries in the first and second columns of the loadings matrix produced by scPCA, respectively (fig.~\ref{fig:comp_leuk_pat1}B). In general, the leading loadings of cPCA and scPCA place an increased importance on the same genes. Regarding the other methods' results, PCA and t-SNE fail to separate the pre- and post-transplant cells, and UMAP's and ZINB-WaVE's embeddings resemble a trajectory more closely than they do a set of clusters.
-
-\begin{figure}[!htbp]
+\FloatBarrier
+\begin{figure*}[!htbp]
   \centering
   \includegraphics[width=0.9\textwidth]{figures/aml035_results}
   \caption{{\em AML Patient 035 scRNA-seq data.} 
   \textbf{A} The two-dimensional embeddings of the patient's BMMC cells produced by PCA, ZINB-WaVE, t-SNE, UMAP, cPCA, and scPCA, with accompanying average silhouette widths quantifying the strengths of the biological signal. cPCA and scPCA produce representations of the data in which the pre- and post-transplant cells form discernible clusters. Based on visual inspection and average silhouette width, scPCA's grouping of pre-transplant cells is denser than that of cPCA's and the opposite is true of the post-transplant cells' cluster. \textbf{B} scPCA's embedding is much sparser, increasing interpretability of the exploratory analysis.}
   \label{fig:comp_leuk_pat1}
-\end{figure}
+\end{figure*}
 
 Similarly to Patient 035's results, the two-dimensional embeddings of Patient 027's data produced by PCA, t-SNE, UMAP, and ZINB-WaVE do not contain distinct clusters of pre- and post-transplant BMMCs (fig.~\ref{fig:comp_leuk_pat2}); however, cPCA and scPCA generate low-dimensional representations of the data in which samples are clustered based on treatment status. Although cPCA's representation produces denser groupings, the first two columns of scPCA's loading matrix contain non-zero values in only three genes, STMN1, LINC00152, and PDLIM1, all of which have been previously linked to leukemia \cite{Machado-Neto2014,Zhang2019,Holleman2004}. 
-\FloatBarrier
