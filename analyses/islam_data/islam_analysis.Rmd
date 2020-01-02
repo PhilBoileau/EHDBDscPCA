@@ -62,8 +62,95 @@ core <- sce[names(vars)[1:1000], ]
 
 # split into target and background datasets
 background_sce <- core[, which(core$type == "Negative control")]
-target_sce <- core[, which(!(core$type != "Negative control"))]
+target_sce <- core[, which(core$type != "Negative control")]
+target_counts <- t(counts(target_sce))
+background_counts <- t(counts(background_sce))
+target_labels <- target_sce$type
 ```
 
 
-# 
+# PCA
+
+```{r pca}
+# perform PCA
+islam_pca <- prcomp(t(counts(target_sce)), center = TRUE, scale. = TRUE)
+
+# compute the average silhouette widths
+group_mem <- if_else(target_labels == "Embryonic stem cell", 1, 2)
+pca_group_sil <- silhouette(group_mem, dist(islam_pca$x))
+
+# plot the 2D representation
+pca_df <- data.frame(
+  PC1 = islam_pca$x[, 1],
+  PC2 = islam_pca$x[, 2],
+  class = factor(target_labels, levels = c("Embryonic stem cell",
+                                           "Embryonic fibroblast"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "Embryonic stem cell",
+      paste0(
+        "Stem Cell (",
+        sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Fibroblast (",
+        sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+pca_p <- pca_df %>%
+  ggplot(aes(x = PC1, y = PC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("PCA") +
+  scale_colour_viridis_d(name = "Cell Type",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+pca_p
+```
+
+# cPCA
+
+```{r cPCA}
+set.seed(452624)
+
+# perform cpca
+islam_cpca <- scPCA(target_counts, background_counts, center = TRUE,
+                    contrasts = exp(seq(log(1), log(10000), length.out = 40)),
+                    scale = TRUE, penalties = 0, n_centers = 2,
+                    max_iter = 1000)
+
+# compute the average silhouette widths
+cpca_group_sil <- silhouette(group_mem, dist(islam_cpca$x))
+
+# plot the 2D representation
+cpca_df <- data.frame(
+  cPC1 = islam_cpca$x[, 1],
+  cPC2 = islam_cpca$x[, 2],
+  class = factor(target_labels, levels = c("Embryonic stem cell",
+                                           "Embryonic fibroblast"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "Embryonic stem cell",
+      paste0(
+        "Stem Cell (",
+        sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Fibroblast (",
+        sprintf("%.3f", round(summary(pca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+cpca_p <- cpca_df %>%
+  ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("cPCA") +
+  scale_colour_viridis_d(name = "Cell Type",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+cpca_p
+```
+
