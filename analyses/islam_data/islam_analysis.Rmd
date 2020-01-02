@@ -1,0 +1,69 @@
+---
+title: "Islam et al."
+author: "Philippe Boileau"
+date: "1/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(here)
+library(tidyverse)
+library(scPCA)
+library(Rtsne)
+library(umap)
+library(ggpubr)
+library(SingleCellExperiment)
+library(cluster)
+library(GEOquery)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Data
+
+```{r load_data}
+# load the count matrix
+count_matrix <- read_tsv(
+  file = here("analyses/islam_data/GSE29087_L139_expression_tab.txt"),
+  skip = 4
+) %>% 
+  mutate(
+    `Sample:` = X1,
+    sample = `Sample:`
+  ) %>%
+  dplyr::select(
+    -X1, -X2, -X3, -X4, -X5, -X6, -`Sample:`
+  ) %>%
+  dplyr::slice(-1) %>%
+  dplyr::filter(
+    !str_detect(sample, "RNA_SPIKE")
+  ) %>%
+  as.data.frame()
+rownames(count_matrix) <- count_matrix[, 97]
+count_matrix <- count_matrix[, -97] %>% data.matrix()
+  
+# get the metadata
+ges <- getGEO("GSE29087")$GSE29087_series_matrix.txt.gz
+
+# create the SingleCellExperiment object
+sce <- SingleCellExperiment(
+  assays = list(counts = count_matrix),
+  colData = list(type = ges$source_name_ch1,
+                 well = ges$`well:ch1`))
+
+# filter genes with less than 5 counts accross samples
+sce <- sce[(Matrix::rowSums(counts(sce) != 0) > 4), ]
+
+# retain the 1000 most variable genes
+vars <- rowVars(as.matrix(log1p(counts(sce))))
+names(vars) <- rownames(sce)
+vars <- sort(vars, decreasing = TRUE)
+core <- sce[names(vars)[1:1000], ]
+
+# split into target and background datasets
+background_sce <- core[, which(core$type == "Negative control")]
+target_sce <- core[, which(!(core$type != "Negative control"))]
+```
+
+
+# 
