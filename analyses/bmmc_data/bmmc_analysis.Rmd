@@ -332,6 +332,45 @@ zinbwave_p
 ```
 
 
+## SIMLR
+
+```{r simlr_pat_027}
+# apply SIMLR algorithm to the target datasaet
+bmmc_simlr <- readRDS(here("analyses/bmmc_data/data/bmmc_simlr_027.rds"))
+
+# get the silhouette width of the batch and biological groups
+simlr_group_sil <- silhouette(group_mem, dist(bmmc_simlr$ydata))
+
+# plot the 2D representation
+simlr_df <- data.frame(
+  SIMLR1 = bmmc_simlr$ydata[, 1],
+  SIMLR2 = bmmc_simlr$ydata[, 2],
+  class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027")),
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_027",
+      paste0("Pre (",
+             sprintf("%.3f",
+                     round(summary(simlr_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("Post (",
+             sprintf("%.3f",
+                     round(summary(simlr_group_sil)$clus.avg.widths[2], 3)),
+             ")"))
+    )
+
+simlr_p <- simlr_df %>%
+  ggplot(aes(x = SIMLR1, y = SIMLR2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("SIMLR") +
+  scale_colour_viridis_d(name = "AML027",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+simlr_p
+```
+
+
 ## Combined Plots
 
 ```{r combined_pat027, fig.retina=3, fig.width=10, fig.height=10}
@@ -698,6 +737,44 @@ zinbwave_p <- zinbwave_df %>%
                          begin = 0.1, end = 0.9) +
   theme_minimal()
 zinbwave_p
+```
+
+## SIMLR
+
+```{r simlr_pat_035}
+# apply SIMLR algorithm to the target datasaet
+bmmc_simlr <- readRDS(here("analyses/bmmc_data/data/bmmc_simlr_035.rds"))
+
+# get the silhouette width of the batch and biological groups
+simlr_group_sil <- silhouette(group_mem, dist(bmmc_simlr$ydata))
+
+# plot the 2D representation
+simlr_df <- data.frame(
+  SIMLR1 = bmmc_simlr$ydata[, 1],
+  SIMLR2 = bmmc_simlr$ydata[, 2],
+  class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035")),
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_035",
+      paste0("Pre (",
+             sprintf("%.3f",
+                     round(summary(simlr_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("Post (",
+             sprintf("%.3f",
+                     round(summary(simlr_group_sil)$clus.avg.widths[2], 3)),
+             ")"))
+    )
+
+simlr_p <- simlr_df %>%
+  ggplot(aes(x = SIMLR1, y = SIMLR2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("SIMLR") +
+  scale_colour_viridis_d(name = "AML035",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+simlr_p
 ```
 
 ## Combined Plots
