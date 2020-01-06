@@ -10,10 +10,6 @@ library(here)
 library(tidyverse)
 library(SIMLR)
 library(SingleCellExperiment)
-library(parallel)
-
-# detect the number of cores
-num_cores <- detectCores()
 
 # load the data
 source(file = here("analyses/bmmc_data/helpers/load_count_data.R"))
@@ -36,8 +32,7 @@ patient_027_sce <- core[, which(core$cell_prov %in%
 patient_027 <- as.matrix(t(counts(patient_027_sce)))
 
 # perform zinbwave
-bmmc_simlr <- SIMLR(X = scale(patient_027), c = 2, no.dim = 2,
-                    cores.ratio = num_cores)
+bmmc_simlr <- SIMLR(X = scale(patient_027), c = 2, no.dim = 2)
 
 saveRDS(bmmc_simlr,
         file = here("analyses/bmmc_data/data/bmmc_simlr_027.rds"))
