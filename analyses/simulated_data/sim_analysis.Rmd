@@ -18,6 +18,7 @@ library(SingleCellExperiment)
 library(splatter)
 library(scater)
 library(zinbwave)
+library(SIMLR)
 library(cluster)
 
 knitr::opts_chunk$set(echo = FALSE)
@@ -671,6 +672,61 @@ zinbwave_b_p
 ```
 
 
+## SIMLR
+
+```{r SIMLR, message=FALSE, warning=FALSE}
+# apply SIMLR algorithm to the target datasaet
+target_simlr <- SIMLR(X = t(scale(tg)), c = 2, no.dim = 2, normalize = FALSE)
+
+# get the silhouette width of the batch and biological groups
+simlr_batch_sil <- silhouette(batch_mem, dist(target_simlr$ydata))
+simlr_group_sil <- silhouette(group_mem, dist(target_simlr$ydata))
+
+# plot the 2D representation
+simlr_df <- data.frame(
+  SIMLR1 = target_simlr$ydata[, 1],
+  SIMLR2 = target_simlr$ydata[, 2],
+  group = target_group,
+  batch = target_batch
+) %>%
+  dplyr::mutate(
+    batch = if_else(
+      batch == "Batch1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(simlr_batch_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(simlr_batch_sil)$clus.avg.widths[2], 3)),
+             ")")),
+    group = if_else(
+      group == "Group1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(simlr_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(simlr_group_sil)$clus.avg.widths[2], 3)),
+                     ")"))
+    )
+
+simlr_p <- simlr_df %>%
+  ggplot(aes(x = SIMLR1, y = SIMLR2, colour = group, shape = batch)) +
+  geom_point() +
+  ggtitle("SIMLR") +
+  scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                         begin = 0.1, end = 0.9) +
+  scale_shape_discrete(name = paste("Batch (Ave. S.W.)")) +
+  guides(shape = guide_legend(override.aes = list(size = 1),
+                                    order = 1),
+               colour = guide_legend(override.aes = list(size = 1),
+                                     order = 2)) +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), 
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.5, "lines"),
+        legend.position = "right")
+simlr_p
+```
+
 # Combined Plots
 
 ```{r comb_plots, fig.retina=3, fig.width=8, fig.height=10}
@@ -689,6 +745,13 @@ ggarrange(
 ```
 
 # Average Sil. Width Plot
+
+**Note**: The SIMLR results are not incluced in the figure since the average
+silhouette width values are misleading; the batch effect is not removed. The
+deceptively good average silhouette widths are a product of SIMLR's
+low-dimensional representation of the data: the distance between biological
+clusters is very large and these clusters are compact. However, they fail to
+remove the batch effect. 
 
 ```{r ave_sil_width_comp}
 # create a dataframe of the ave sil widths
