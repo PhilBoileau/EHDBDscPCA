@@ -29,7 +29,7 @@ core <- sce[names(vars)[1:1000], ]
 # consider only the taret dataset
 patient_027_sce <- core[, which(core$cell_prov %in%
                                   c("pre_trans_027", "post_trans_027"))]
-patient_027 <- as.matrix(t(counts(patient_027_sce)))
+patient_027 <- as.matrix(counts(patient_027_sce))
 
 # perform zinbwave
 bmmc_simlr <- SIMLR(X = scale(patient_027), c = 2, no.dim = 2)
