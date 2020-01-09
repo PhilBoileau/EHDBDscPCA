@@ -314,3 +314,6 @@ TSWLatexianTemp*
 
 # Makeindex log files
 *.lpz
+
+# Files that are too big
+*/bmmc_simlr_035.rds

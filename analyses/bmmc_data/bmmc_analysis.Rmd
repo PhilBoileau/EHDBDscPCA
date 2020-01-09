@@ -345,7 +345,7 @@ simlr_group_sil <- silhouette(group_mem, dist(bmmc_simlr$ydata))
 simlr_df <- data.frame(
   SIMLR1 = bmmc_simlr$ydata[, 1],
   SIMLR2 = bmmc_simlr$ydata[, 2],
-  class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027")),
+  class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027"))
 ) %>%
   dplyr::mutate(
     class = if_else(
@@ -752,7 +752,7 @@ simlr_group_sil <- silhouette(group_mem, dist(bmmc_simlr$ydata))
 simlr_df <- data.frame(
   SIMLR1 = bmmc_simlr$ydata[, 1],
   SIMLR2 = bmmc_simlr$ydata[, 2],
-  class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035")),
+  class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035"))
 ) %>%
   dplyr::mutate(
     class = if_else(
