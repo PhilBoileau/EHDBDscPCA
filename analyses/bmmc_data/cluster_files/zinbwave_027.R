@@ -35,7 +35,7 @@ patient_027_se <- SummarizedExperiment(
 )
 
 # perform zinbwave
-multicore <- MulticoreParam(workers = 3)
+multicore <- MulticoreParam(workers = 30)
 BiocParallel::register(multicore, default = TRUE)
 bmmc_zinbwave_sce <- zinbwave(
   patient_027_se,

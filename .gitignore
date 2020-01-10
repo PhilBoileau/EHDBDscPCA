@@ -30,6 +30,8 @@ vignettes/*.pdf
 # knitr and R markdown default cache directories
 /*_cache/
 /cache/
+analyses/simulated_data/sim_analysis_cache/
+analyses/simulated_data/sim_analysis_files/
 
 # Temporary files created by R markdown
 *.utf8.md
@@ -312,3 +314,6 @@ TSWLatexianTemp*
 
 # Makeindex log files
 *.lpz
+
+# Files that are too big
+*/bmmc_simlr_035.rds
