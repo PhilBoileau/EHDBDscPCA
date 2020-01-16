@@ -724,6 +724,10 @@ simlr_p <- simlr_df %>%
         legend.text = element_text(size = 10),
         legend.key.size = unit(0.5, "lines"),
         legend.position = "right")
+
+ggsave(here("manuscript/figures/simulated_SIMLR.png"),
+       width = 15, height = 10, units = "cm", dpi = 300)
+
 simlr_p
 ```
 
