@@ -16,7 +16,7 @@ library(BiocParallel)
 source(file = here("analyses/bmmc_data/helpers/load_count_data.R"))
 
 # ensure reproducibility
-set.seed(143252)
+set.seed(98712)
 
 # retain genes that contain 5 or more non-zero counts accross all cells
 sce <- sce[(Matrix::rowSums(counts(sce) != 0) > 4), ]
@@ -36,11 +36,10 @@ background <- as.matrix(t(counts(background_sce)))
 patient_027 <- as.matrix(t(counts(patient_027_sce)))
 
 # perform scpca
-snowparam <- SnowParam(workers = 30, type = "SOCK")
+snowparam <- SnowParam(workers = 8, type = "SOCK")
 BiocParallel::register(snowparam, default = TRUE)
-bmmc_scpca <- scPCA(patient_027, background,
-                    penalties = exp(seq(log(1e-9), log(1), length.out = 20)),
-                    center = TRUE, scale = TRUE, n_centers = 2, parallel = TRUE,
-                    max_iters = 1000, cv = 5)
+bmmc_scpca <- scPCA(patient_027, background, penalties = 0, center = TRUE,
+                    scale = TRUE, n_centers = 2, parallel = TRUE, cv = 5,
+                    max_iters = 1000)
 
-saveRDS(bmmc_scpca, file = here("analyses/bmmc_data/data/bmmc_scpca_cv_027.rds"))
+saveRDS(bmmc_scpca, file = here("analyses/bmmc_data/data/bmmc_cpca_cv_027.rds"))

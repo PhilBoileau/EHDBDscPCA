@@ -16,7 +16,7 @@ library(BiocParallel)
 source(file = here("analyses/bmmc_data/helpers/load_count_data.R"))
 
 # ensure reproducibility
-set.seed(5434663)
+set.seed(23421)
 
 # retain genes that contain 5 or more non-zero counts accross all cells
 sce <- sce[(Matrix::rowSums(counts(sce) != 0) > 4), ]
@@ -43,4 +43,4 @@ bmmc_scpca <- scPCA(patient_035, background,
                     center = TRUE, scale = TRUE, n_centers = 2, parallel = TRUE,
                     max_iters = 1000, cv = TRUE)
 
-saveRDS(bmmc_scpca, file = here("analyses/bmmc_data/data/bmmc_scpca_035.rds"))
+saveRDS(bmmc_scpca, file = here("analyses/bmmc_data/data/bmmc_scpca_cv_035.rds"))
