@@ -1,10 +1,9 @@
-# File for running cpca on dengue data
+# File for running scPCA on dengue data
 library(GEOquery)
 library(genefilter)
 library(scPCA)
-library(future)
 
-plan(multiprocess, workers = 32)
+set.seed(41231)
 
 # load the data, already log2 transformed
 ges <- getGEO("GSE51808")$GSE51808_series_matrix.txt.gz
@@ -21,8 +20,8 @@ background <- t(exprs(var_filt_ges)[, control_label])
 dengue_class <- var_filt_ges$`status:ch1`[-control_label]
 
 # run cpca on the expression data
-dengue_cpca <- scPCA(target, background, center = TRUE,
-                     penalties = 0, n_centers = 3)
+dengue_scpca <- scPCA(target, background, center = TRUE, n_centers = 3,
+                      max_iter = 1000, cv = 5)
 
 # save the results
-save(dengue_cpca, file = "cpca.RData")
+save(dengue_scpca, file = "scpca_cv.RData")

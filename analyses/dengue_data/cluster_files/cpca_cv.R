@@ -3,6 +3,8 @@ library(GEOquery)
 library(genefilter)
 library(scPCA)
 
+set.seed(12312)
+
 # load the data, already log2 transformed
 ges <- getGEO("GSE51808")$GSE51808_series_matrix.txt.gz
 
@@ -19,7 +21,7 @@ dengue_class <- var_filt_ges$`status:ch1`[-control_label]
 
 # run cpca on the expression data
 dengue_cpca <- scPCA(target, background, center = TRUE,
-                     penalties = 0, n_centers = 3)
+                     penalties = 0, n_centers = 3, cv = 5)
 
 # save the results
-save(dengue_cpca, file = "cpca.RData")
+save(dengue_cpca, file = "cpca_cv.RData")
