@@ -40,6 +40,6 @@ snowparam <- SnowParam(workers = 8, type = "SOCK")
 BiocParallel::register(snowparam, default = TRUE)
 bmmc_scpca <- scPCA(patient_027, background, penalties = 0, center = TRUE,
                     scale = TRUE, n_centers = 2, parallel = TRUE, cv = 5,
-                    max_iters = 1000)
+                    max_iter = 1000)
 
 saveRDS(bmmc_scpca, file = here("analyses/bmmc_data/data/bmmc_cpca_cv_027.rds"))
