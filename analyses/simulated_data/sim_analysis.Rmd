@@ -439,6 +439,132 @@ the most prominent.  Of the `r length(which(sim_scpca$rotation[, 1] != 0))`
 genes with non-zero values in the first row of scPCA's loading matrix,
 `r sum(scpca_table$scPCA1)` corresponded to differentially expressed genes.
 
+## cPCA (Tuned with Cross-Validation)
+
+5-fold cross-validation was used to tune the constrastive parameter.
+
+```{r cpca_cv}
+sim_cpca_cv <- scPCA(target = tg, background = bg, scale = TRUE,
+                     penalties = 0, n_centers = 2, cv = 5, max_iter = 1000)
+
+# get silhouette widths
+cpca_cv_batch_sil <- silhouette(batch_mem, dist(sim_cpca_cv$x))
+cpca_cv_group_sil <- silhouette(group_mem, dist(sim_cpca_cv$x))
+
+# plot the 2D representation
+cpca_cv_df <- data.frame(
+  cPC1 = sim_cpca_cv$x[, 1],
+  cPC2 = sim_cpca_cv$x[, 2],
+  group = target_group,
+  batch = target_batch
+) %>%
+  dplyr::mutate(
+    batch = if_else(
+      batch == "Batch1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(cpca_cv_batch_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(cpca_cv_batch_sil)$clus.avg.widths[2], 3)),
+             ")")),
+    group = if_else(
+      group == "Group1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[2], 3)),
+             ")"))
+    )
+cpca_cv_p <- cpca_cv_df %>%
+  ggplot(aes(x = cPC1, y = cPC2, colour = group, shape = batch)) +
+  geom_point() +
+  ggtitle("5-Fold CV cPCA") +
+  scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                         begin = 0.1, end = 0.9) +
+  scale_shape_discrete(name = "Batch (Ave. S.W.)") +
+  guides(shape = guide_legend(override.aes = list(size = 1),
+                                    order = 1),
+               colour = guide_legend(override.aes = list(size = 1),
+                                     order = 2)) +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), 
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.5, "lines"),
+        legend.position = "right")
+cpca_cv_p
+```
+
+
+## scPCA (Tuned with Cross-Validation)
+
+5-fold cross-validation was used to tune the hyperparameters.
+
+```{r scpca_sim, cache = TRUE}
+set.seed(412321)
+
+# perform scpca, tuning hyperparameters through 5-fold cv
+BiocParallel::register(SnowParam(workers = 3), default = TRUE)
+sim_scpca_cv <- scPCA(tg, bg, center = TRUE, scale = TRUE, n_centers = 2,
+                      parallel = TRUE, cv = 5)
+
+# save the file for later
+write_rds(sim_scpca_cv,
+          path = here("analyses/simulations/scPCA_results/sim_scpca_cv.rds"))
+
+# load the data
+sim_scpca_cv <- read_rds(
+  path = here("analyses/simulated_data/sim_scpca_cv.rds")
+)
+
+# get silhouette widths
+scpca_cv_batch_sil <- silhouette(batch_mem, dist(sim_scpca_cv$x))
+scpca_cv_group_sil <- silhouette(group_mem, dist(sim_scpca_cv$x))
+
+# plot the 2D representation
+scpca_cv_df <- data.frame(
+  scPC1 = sim_scpca_cv$x[, 1],
+  scPC2 = sim_scpca_cv$x[, 2],
+  group = target_group,
+  batch = target_batch
+) %>%
+  dplyr::mutate(
+    batch = if_else(
+      batch == "Batch1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(scpca_cv_batch_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(scpca_cv_batch_sil)$clus.avg.widths[2], 3)),
+             ")")),
+    group = if_else(
+      group == "Group1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[2], 3)),
+             ")"))
+    )
+scpca_cv_p <- scpca_cv_df %>%
+  ggplot(aes(x = scPC1, y = scPC2, colour = group, shape = batch)) +
+  geom_point() +
+  ggtitle("scPCA") +
+  scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                         begin = 0.1, end = 0.9) +
+  scale_shape_discrete(name = "Batch (Ave. S.W.)") +
+  guides(shape = guide_legend(override.aes = list(size = 1),
+                                    order = 1),
+               colour = guide_legend(override.aes = list(size = 1),
+                                     order = 2)) +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), 
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.5, "lines"),
+        legend.position = "right")
+scpca_cv_p
+```
+
 ## t-SNE
 
 ```{r tsne}

@@ -571,7 +571,7 @@ loadings_comp
 
 ### cPCA (Tuned with Cross-Validation)
 
-5-fold cross-validation was used to tune the hyperparameters.
+5-fold cross-validation was used to tune the contrastive parameter.
 
 ```{r cPCA_cv_mice}
 # run cPCA for using 40 logarithmically seperated contrastive param values
