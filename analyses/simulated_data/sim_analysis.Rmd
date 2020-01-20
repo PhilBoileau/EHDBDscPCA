@@ -567,9 +567,67 @@ scpca_cv_p
 
 ## t-SNE
 
-```{r tsne}
+### With Initial PCA Step:
+```{r tsne_with_pca}
 # get tsne representation
-sim_tsne <- Rtsne(scale(tg), theta = 0, pca = FALSE)
+sim_tsne_pca <- Rtsne(scale(tg), theta = 0, perplexity = 30, max_iter = 1000,
+                      pca = TRUE)
+
+# get silhouette widths
+tsne_pca_batch_sil <- silhouette(batch_mem, dist(sim_tsne_pca$Y[, 1:2]))
+tsne_pca_group_sil <- silhouette(group_mem, dist(sim_tsne_pca$Y[, 1:2]))
+
+# plot the first two axes
+tsne_pca_df <- data.frame(
+  TSNE1 = sim_tsne_pca$Y[, 1],
+  TSNE2 = sim_tsne_pca$Y[, 2],
+  group = target_group,
+  batch = target_batch
+) %>%
+  dplyr::mutate(
+    batch = if_else(
+      batch == "Batch1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(tsne_pca_batch_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(tsne_pca_batch_sil)$clus.avg.widths[2], 3)),
+             ")")),
+    group = if_else(
+      group == "Group1",
+      paste0("1 (",
+             sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[1], 3)),
+             ")"),
+      paste0("2 (",
+             sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[2], 3)),
+             ")"))
+    )
+
+tsne_pca_p <- tsne_pca_df %>%
+  ggplot(aes(x = TSNE1, y = TSNE2, colour = group, shape = batch)) +
+  geom_point() +
+  ggtitle("t-SNE") +
+  xlab("tSNE1") +
+  ylab("tSNE2") +
+  scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
+                         begin = 0.1, end = 0.9) +
+  scale_shape_discrete(name = "Batch (Ave. S.W.)") +
+  guides(shape = guide_legend(override.aes = list(size = 1), order = 1),
+         colour = guide_legend(override.aes = list(size = 1), order = 2)) +
+  theme_minimal() +
+  theme(legend.title = element_text(size = 10), 
+        legend.text = element_text(size = 10),
+        legend.key.size = unit(0.5, "lines"),
+        legend.position = "right")
+tsne_pca_p
+```
+
+### Without Initial PCA Step
+
+```{r tsne_no_pca}
+# get tsne representation
+sim_tsne <- Rtsne(scale(tg), theta = 0, perplexity = 30, max_iter = 1000,
+                  pca = FALSE)
 
 # get silhouette widths
 tsne_batch_sil <- silhouette(batch_mem, dist(sim_tsne$Y[, 1:2]))
@@ -622,12 +680,19 @@ tsne_p <- tsne_df %>%
 tsne_p
 ```
 
+Since both initializations produced qualitatively identical embeddings, t-SNE
+without the initial PCA step is considered in the manuscript.
 
 ## UMAP
 
 ```{r umap}
+# set the parameters
+params <- umap.defaults
+params$n_neighbors <- 30
+params$min_dist <- 0.02
+
 # get the umap representation
-sim_umap <- umap(scale(tg))
+sim_umap <- umap(scale(tg), config = params)
 
 # get silhouette widths
 umap_batch_sil <- silhouette(batch_mem, dist(sim_umap$layout))

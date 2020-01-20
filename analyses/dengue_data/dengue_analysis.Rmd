@@ -663,9 +663,60 @@ loadings_comp <- annotate_figure(
 
 ## t-SNE
 
+### With Initial PCA Step
+
+```{r tsne_with_pca}
+# get tsne representation
+dengue_tsne_pca <- Rtsne(target, perplexity = 8, pca = TRUE, max_iter = 1000,
+                         theta = 0)
+
+# t-SNE silhouette width
+tsne_pca_group_sil <- silhouette(group_mem, dist(dengue_tsne_pca$Y))
+
+# plot the first two axes
+tsne_pca_df <- data.frame(
+  TSNE1 = dengue_tsne_pca$Y[, 1],
+  TSNE2 = dengue_tsne_pca$Y[, 2],
+  class = dengue_class
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "convalescent",
+      paste0(
+        "Conv. (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      if_else(
+        class == "DF",
+        paste0(
+        "DF (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+        paste0("DHF (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[3], 3)),
+        ")")
+      )
+    )
+  )
+
+
+tsne_pca_p <- tsne_pca_df %>%
+  ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
+  geom_point() +
+  xlab("tSNE1") +
+  ylab("tSNE2") +
+  ggtitle("t-SNE") +
+  scale_colour_viridis_d(name = "Class",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+tsne_pca_p
+```
+
+### Without Initial PCA Step
+
 ```{r tsne}
 # get tsne representation
-dengue_tsne <- Rtsne(target, perplexity = 8, pca = FALSE)
+dengue_tsne <- Rtsne(target, perplexity = 8, pca = FALSE, theta = 0)
 
 # t-SNE silhouette width
 tsne_group_sil <- silhouette(group_mem, dist(dengue_tsne$Y))
@@ -709,11 +760,19 @@ tsne_p <- tsne_df %>%
 tsne_p
 ```
 
+Since both initializations produced qualitatively identical embeddings, t-SNE
+without the initial PCA step is considered in the manuscript.
+
 ## UMAP
 
 ```{r umap}
+# set the parameters
+params <- umap.defaults
+params$n_neighbors <- 15
+params$min_dist <- 0.2
+
 # get the umap representation
-dengue_umap <- umap(target)
+dengue_umap <- umap(target, config = params)
 
 # umap silhouette width
 umap_group_sil <- silhouette(group_mem, dist(dengue_umap$layout))
