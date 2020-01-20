@@ -623,6 +623,7 @@ tsne_pca_p
 ```
 
 ### Without Initial PCA Step
+
 ```{r tsne_no_pca}
 # get tsne representation
 sim_tsne <- Rtsne(scale(tg), theta = 0, perplexity = 30, max_iter = 1000,
