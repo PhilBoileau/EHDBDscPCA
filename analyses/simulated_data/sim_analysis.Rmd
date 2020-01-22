@@ -501,20 +501,9 @@ cpca_cv_p
 5-fold cross-validation was used to tune the hyperparameters.
 
 ```{r scpca_sim, cache = TRUE}
-set.seed(412321)
-
-# perform scpca, tuning hyperparameters through 5-fold cv
-BiocParallel::register(SnowParam(workers = 3), default = TRUE)
-sim_scpca_cv <- scPCA(tg, bg, center = TRUE, scale = TRUE, n_centers = 2,
-                      parallel = TRUE, cv = 5)
-
-# save the file for later
-write_rds(sim_scpca_cv,
-          path = here("analyses/simulations/scPCA_results/sim_scpca_cv.rds"))
-
-# load the data
+# load the data, see cluster_files folder
 sim_scpca_cv <- read_rds(
-  path = here("analyses/simulated_data/sim_scpca_cv.rds")
+  path = here("analyses/simulated_data/cluster_files/sim_scpca_cv.rds")
 )
 
 # get silhouette widths
@@ -948,7 +937,7 @@ low-dimensional representation of the data: the distance between biological
 clusters is very large and these clusters are compact. However, they fail to
 remove the batch effect. 
 
-```{r ave_sil_width_comp}
+```{r ave_sil_width_comp, fig.width=8}
 # create a dataframe of the ave sil widths
 ave_sil_width_df <- data.frame(
   "ave_sil" = c(summary(pca_group_sil)$clus.avg.widths,
