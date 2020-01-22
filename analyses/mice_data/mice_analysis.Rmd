@@ -714,7 +714,7 @@ p_tsne_pca
 
 ### Without Initial PCA Step
 
-```{r t-sne_mice_pca}
+```{r t-sne_mice}
 # run the tsne algorithm with default 
 tsne_mice <- Rtsne(target_df[, 1:77], theta = 0, pca_scale = FALSE,
                    perplexity = 30, max_iter = 1000)

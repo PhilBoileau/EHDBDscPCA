@@ -660,6 +660,106 @@ loadings_comp <- annotate_figure(
 )
 ```
 
+## cPCA (Tuned with Cross-Validation)
+
+5-fold cross-validation was used to tune the contrastive parameter.
+
+```{r cPCA_cv}
+# see cluster_files folder
+dengue_cpca_cv <- load(
+  file = here("analyses/dengue_data/cluster_files/cpca_cv.Rdata")
+)
+
+# compute the average silhouette widths
+cpca_cv_group_sil <- silhouette(group_mem, dist(dengue_cpca_cv$x))
+
+# plot the 2D representation
+cpca_cv_df <- data.frame(
+  cPC1 = -dengue_cpca_cv$x[, 1],
+  cPC2 = dengue_cpca_cv$x[, 2],
+  class = dengue_class
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "convalescent",
+      paste0(
+        "Conv. (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      if_else(
+        class == "DF",
+        paste0(
+        "DF (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+        paste0("DHF (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[3], 3)),
+        ")")
+      )
+    )
+  )
+
+cpca_cv_p <- cpca_cv_df %>%
+  ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
+  geom_point() +
+  ggtitle("cPCA") +
+  scale_colour_viridis_d(name = "Class",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+cpca_cv_p
+```
+
+
+
+## scPCA (Tuned with Cross-Validation)
+
+5-fold cross-validation was used to tune the hyperparameters.
+
+```{r scPCA_cv}
+# see cluster_files folder
+dengue_scpca_cv <- load(
+  file = here("analyses/dengue_data/cluster_files/scpca_cv.Rdata")
+)
+
+# compute the average silhouette widths
+scpca_cv_group_sil <- silhouette(group_mem, dist(dengue_scpca_cv$x))
+
+# plot the 2D representation
+scpca_cv_df <- data.frame(
+  scPC1 = dengue_scpca_cv$x[, 1],
+  scPC2 = dengue_scpca_cv$x[, 2],
+  class = dengue_class
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "convalescent",
+      paste0(
+        "Conv. (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      if_else(
+        class == "DF",
+        paste0(
+        "DF (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+        paste0("DHF (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[3], 3)),
+        ")")
+      )
+    )
+  )
+
+scpca_cv_p <- scpca_cv_df %>%
+  ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
+  geom_point() +
+  ggtitle("scPCA") +
+  scale_colour_viridis_d(name = "Class",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+scpca_cv_p
+```
+
 
 ## t-SNE
 
