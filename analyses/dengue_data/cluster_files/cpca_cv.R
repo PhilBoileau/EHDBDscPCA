@@ -20,8 +20,8 @@ background <- t(exprs(var_filt_ges)[, control_label])
 dengue_class <- var_filt_ges$`status:ch1`[-control_label]
 
 # run cpca on the expression data
-dengue_cpca <- scPCA(target, background, center = TRUE,
-                     penalties = 0, n_centers = 3, cv = 5)
+dengue_cpca_cv <- scPCA(target, background, center = TRUE,
+                        penalties = 0, n_centers = 3, cv = 3)
 
 # save the results
-save(dengue_cpca, file = "cpca_cv.RData")
+save(dengue_cpca_cv, file = "cpca_cv.RData")

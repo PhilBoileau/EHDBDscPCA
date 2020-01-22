@@ -534,6 +534,8 @@ ggarrange(p_scpca_2, p_scpca_3, p_scpca_4, p_scpca_5,
 
 ### Genes With Non-Zero Loadings
 
+Tables included in the appendix of the manuscript.
+
 ```{r map_genes}
 # match the affymetrix code to the gene symbol
 gene_df <- target %>% colnames %>% tibble()
@@ -561,7 +563,6 @@ gene_scpca1 <- rotation_df %>%
     digits = 4
   )
 
-
 gene_scpca2 <- rotation_df %>%
   dplyr::filter(scPCA2 != 0) %>%
   select(gene_sym, gene_title, scPCA2) %>%
@@ -569,12 +570,11 @@ gene_scpca2 <- rotation_df %>%
     caption = "Genes with non-zero weights in second scPCA loadings vector.",
     digits = 4
   )
-
 ```
 
 ### Comparison of cPCA and scPCA Loadings
 
-```{r comp_loadings}
+```{r comp_loadings, warning=FALSE, message=FALSE}
 # compute the relative absolute loading ratios
 cpca_loads_df <- dengue_cpca$rotation %>%
   as.data.frame() %>%
@@ -658,17 +658,16 @@ loadings_comp <- annotate_figure(
   ggarrange(p1, p2, nrow = 1, ncol = 2,
             common.legend = TRUE, legend = "right")
 )
+loadings_comp
 ```
 
 ## cPCA (Tuned with Cross-Validation)
 
-5-fold cross-validation was used to tune the contrastive parameter.
+3-fold cross-validation was used to tune the contrastive parameter.
 
 ```{r cPCA_cv}
 # see cluster_files folder
-dengue_cpca_cv <- load(
-  file = here("analyses/dengue_data/cluster_files/cpca_cv.Rdata")
-)
+load(file = here("analyses/dengue_data/cluster_files/cpca_cv.Rdata"))
 
 # compute the average silhouette widths
 cpca_cv_group_sil <- silhouette(group_mem, dist(dengue_cpca_cv$x))
@@ -713,13 +712,11 @@ cpca_cv_p
 
 ## scPCA (Tuned with Cross-Validation)
 
-5-fold cross-validation was used to tune the hyperparameters.
+3-fold cross-validation was used to tune the hyperparameters.
 
 ```{r scPCA_cv}
 # see cluster_files folder
-dengue_scpca_cv <- load(
-  file = here("analyses/dengue_data/cluster_files/scpca_cv.Rdata")
-)
+load(file = here("analyses/dengue_data/cluster_files/scpca_cv.Rdata"))
 
 # compute the average silhouette widths
 scpca_cv_group_sil <- silhouette(group_mem, dist(dengue_scpca_cv$x))
