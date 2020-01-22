@@ -46,4 +46,4 @@ sim_scpca_cv <- scPCA(tg, bg, center = TRUE, scale = TRUE, n_centers = 2)
 
 # save the file for later
 write_rds(sim_scpca_cv,
-          path = here("analyses/simulations/sim_scpca_cv.rds"))
+          path = here("analyses/simulated_data/cluster_files/sim_scpca_cv.rds"))
