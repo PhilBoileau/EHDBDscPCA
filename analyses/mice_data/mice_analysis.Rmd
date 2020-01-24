@@ -569,11 +569,155 @@ loadings_comp
 ```
 
 
-### T-SNE
+### cPCA (Tuned with Cross-Validation)
+
+5-fold cross-validation was used to tune the contrastive parameter.
+
+```{r cPCA_cv_mice}
+# run cPCA for using 40 logarithmically seperated contrastive param values
+cpca_cv_mice <- scPCA(target = target_df[, 1:77],
+                      background = background_df,
+                      penalties = 0,
+                      n_centers = 2,
+                      scale = TRUE,
+                      cv = 5,
+                      max_iter = 1000)
+
+# compute the average silhouette widths
+cpca_cv_group_sil <- silhouette(group_mem, dist(cpca_cv_mice$x))
+
+# create a dataframe to be plotted
+cpca_cv_df <- cpca_cv_mice$x %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(cpca_cv_df) <- c("cPC1", "cPC2", "label")
+
+# plot the results
+p_cpca_cv <- ggplot(cpca_cv_df, aes(x = -cPC1, y = -cPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("5-Fold CV cPCA") +
+  xlab("cPC1") +
+  ylab("cPC2") +
+  theme_minimal()
+p_cpca_cv
+```
+
+
+### scPCA (Tuned with Cross-Validation)
+
+5-fold cross-validation was used to tune the hyperparameters.
+
+```{r scPCA_cv_mice, cache=TRUE}
+# run cv scPCA for using 40 logarithmically seperated contrastive parameter
+# values and possible 20 L1 penalty terms
+scpca_cv_mice <- scPCA(target = target_df[, 1:77],
+                    background = background_df,
+                    n_centers = 2,
+                    scale = TRUE,
+                    cv = 5,
+                    max_iter = 1000)
+
+
+# compute the average silhouette widths
+scpca_cv_group_sil <- silhouette(group_mem, dist(scpca_cv_mice$x))
+
+# create a dataframe to be plotted
+scpca_cv_df <- scpca_cv_mice$x %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+colnames(scpca_cv_df) <- c("scPC1", "scPC2", "label")
+
+# plot the results
+p_scpca_cv <- ggplot(scpca_cv_df, aes(x = -scPC1, y = scPC2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("5-Fold CV scPCA") +
+  xlab("scPC1") +
+  ylab("scPC2") +
+  theme_minimal()
+p_scpca_cv
+```
+
+### t-SNE
+
+### With Initial PCA Step
+
+```{r t-sne_mice_pca}
+# run the tsne algorithm with default 
+tsne_pca_mice <- Rtsne(target_df[, 1:77], theta = 0, pca_scale = TRUE,
+                   perplexity = 30, max_iter = 1000)
+
+# compute the average silhouette widths
+tsne_pca_group_sil <- silhouette(group_mem, dist(tsne_pca_mice$Y))
+
+# create the t-sne dataframe
+tsne_pca_df <- tsne_pca_mice$Y %>%
+  as.data.frame() %>%
+  dplyr::mutate(class = target_df$class) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "c-SC-s",
+      paste0(
+        "Con. (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Tri. (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+colnames(tsne_pca_df) <- c("tSNE1", "tSNE2", "label")
+
+# plot the result
+p_tsne_pca <- ggplot(tsne_pca_df, aes(x = tSNE1, y = tSNE2, colour = label)) +
+  geom_point(alpha = 0.7) +
+  scale_colour_viridis_d(name = "Mice",
+                         begin = 0.1, end = 0.9) +
+  ggtitle("t-SNE") +
+  xlab("tSNE1") +
+  ylab("tSNE2") +
+  theme_minimal()
+p_tsne_pca
+```
+
+### Without Initial PCA Step
 
 ```{r t-sne_mice}
 # run the tsne algorithm with default 
-tsne_mice <- Rtsne(target_df[, 1:77], theta = 0, pca_scale = TRUE)
+tsne_mice <- Rtsne(target_df[, 1:77], theta = 0, pca_scale = FALSE,
+                   perplexity = 30, max_iter = 1000)
 
 # compute the average silhouette widths
 tsne_group_sil <- silhouette(group_mem, dist(tsne_mice$Y))
@@ -609,12 +753,14 @@ p_tsne <- ggplot(tsne_df, aes(x = tSNE1, y = tSNE2, colour = label)) +
 p_tsne
 ```
 
+Since the initializations without the initial PCA step produced a qualitatively
+superior embedding, it is considered in the manuscript.
+
 ### UMAP
 
 ```{r umap_mice}
 # run the tsne algorithm with default 
-umap_mice <- umap(target_df[, 1:77])
-
+umap_mice <- umap(target_df[, 1:77], n_neighbors = 30, min_dist = 0.02)
 
 # compute the average silhouette widths
 umap_group_sil <- silhouette(group_mem, dist(umap_mice$layout))

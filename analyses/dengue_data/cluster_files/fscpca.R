@@ -2,9 +2,7 @@
 library(GEOquery)
 library(genefilter)
 library(scPCA)
-library(future)
-
-plan(multiprocess, workers = 32)
+library(BiocParallel)
 
 set.seed(871234)
 
@@ -23,6 +21,9 @@ background <- t(exprs(var_filt_ges)[, control_label])
 dengue_class <- var_filt_ges$`status:ch1`[-control_label]
 
 # repeat scPCA for n_centers = 2,3,4,5
+snowparam <- SnowParam(workers = 32, type = "SOCK")
+BiocParallel::register(snowparam, default = TRUE)
+
 diff_centers_scpca <- lapply(2:5, function(x) {
   
   # fit scPCA for different number of centers

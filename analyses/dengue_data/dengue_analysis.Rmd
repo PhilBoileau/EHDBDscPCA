@@ -534,6 +534,8 @@ ggarrange(p_scpca_2, p_scpca_3, p_scpca_4, p_scpca_5,
 
 ### Genes With Non-Zero Loadings
 
+Tables included in the appendix of the manuscript.
+
 ```{r map_genes}
 # match the affymetrix code to the gene symbol
 gene_df <- target %>% colnames %>% tibble()
@@ -561,7 +563,6 @@ gene_scpca1 <- rotation_df %>%
     digits = 4
   )
 
-
 gene_scpca2 <- rotation_df %>%
   dplyr::filter(scPCA2 != 0) %>%
   select(gene_sym, gene_title, scPCA2) %>%
@@ -569,12 +570,11 @@ gene_scpca2 <- rotation_df %>%
     caption = "Genes with non-zero weights in second scPCA loadings vector.",
     digits = 4
   )
-
 ```
 
 ### Comparison of cPCA and scPCA Loadings
 
-```{r comp_loadings}
+```{r comp_loadings, warning=FALSE, message=FALSE}
 # compute the relative absolute loading ratios
 cpca_loads_df <- dengue_cpca$rotation %>%
   as.data.frame() %>%
@@ -658,14 +658,162 @@ loadings_comp <- annotate_figure(
   ggarrange(p1, p2, nrow = 1, ncol = 2,
             common.legend = TRUE, legend = "right")
 )
+loadings_comp
+```
+
+## cPCA (Tuned with Cross-Validation)
+
+3-fold cross-validation was used to tune the contrastive parameter.
+
+```{r cPCA_cv}
+# see cluster_files folder
+load(file = here("analyses/dengue_data/cluster_files/cpca_cv.Rdata"))
+
+# compute the average silhouette widths
+cpca_cv_group_sil <- silhouette(group_mem, dist(dengue_cpca_cv$x))
+
+# plot the 2D representation
+cpca_cv_df <- data.frame(
+  cPC1 = -dengue_cpca_cv$x[, 1],
+  cPC2 = dengue_cpca_cv$x[, 2],
+  class = dengue_class
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "convalescent",
+      paste0(
+        "Conv. (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      if_else(
+        class == "DF",
+        paste0(
+        "DF (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+        paste0("DHF (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[3], 3)),
+        ")")
+      )
+    )
+  )
+
+cpca_cv_p <- cpca_cv_df %>%
+  ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
+  geom_point() +
+  ggtitle("cPCA") +
+  scale_colour_viridis_d(name = "Class",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+cpca_cv_p
+```
+
+
+
+## scPCA (Tuned with Cross-Validation)
+
+3-fold cross-validation was used to tune the hyperparameters.
+
+```{r scPCA_cv}
+# see cluster_files folder
+load(file = here("analyses/dengue_data/cluster_files/scpca_cv.Rdata"))
+
+# compute the average silhouette widths
+scpca_cv_group_sil <- silhouette(group_mem, dist(dengue_scpca_cv$x))
+
+# plot the 2D representation
+scpca_cv_df <- data.frame(
+  scPC1 = dengue_scpca_cv$x[, 1],
+  scPC2 = dengue_scpca_cv$x[, 2],
+  class = dengue_class
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "convalescent",
+      paste0(
+        "Conv. (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      if_else(
+        class == "DF",
+        paste0(
+        "DF (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+        paste0("DHF (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[3], 3)),
+        ")")
+      )
+    )
+  )
+
+scpca_cv_p <- scpca_cv_df %>%
+  ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
+  geom_point() +
+  ggtitle("scPCA") +
+  scale_colour_viridis_d(name = "Class",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+scpca_cv_p
 ```
 
 
 ## t-SNE
 
+### With Initial PCA Step
+
+```{r tsne_with_pca}
+# get tsne representation
+dengue_tsne_pca <- Rtsne(target, perplexity = 8, pca = TRUE, max_iter = 1000,
+                         theta = 0)
+
+# t-SNE silhouette width
+tsne_pca_group_sil <- silhouette(group_mem, dist(dengue_tsne_pca$Y))
+
+# plot the first two axes
+tsne_pca_df <- data.frame(
+  TSNE1 = dengue_tsne_pca$Y[, 1],
+  TSNE2 = dengue_tsne_pca$Y[, 2],
+  class = dengue_class
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "convalescent",
+      paste0(
+        "Conv. (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      if_else(
+        class == "DF",
+        paste0(
+        "DF (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+        paste0("DHF (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[3], 3)),
+        ")")
+      )
+    )
+  )
+
+
+tsne_pca_p <- tsne_pca_df %>%
+  ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
+  geom_point() +
+  xlab("tSNE1") +
+  ylab("tSNE2") +
+  ggtitle("t-SNE") +
+  scale_colour_viridis_d(name = "Class",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+tsne_pca_p
+```
+
+### Without Initial PCA Step
+
 ```{r tsne}
 # get tsne representation
-dengue_tsne <- Rtsne(target, perplexity = 8, pca = FALSE)
+dengue_tsne <- Rtsne(target, perplexity = 8, pca = FALSE, theta = 0)
 
 # t-SNE silhouette width
 tsne_group_sil <- silhouette(group_mem, dist(dengue_tsne$Y))
@@ -709,11 +857,19 @@ tsne_p <- tsne_df %>%
 tsne_p
 ```
 
+Since both initializations produced qualitatively identical embeddings, t-SNE
+without the initial PCA step is considered in the manuscript.
+
 ## UMAP
 
 ```{r umap}
+# set the parameters
+params <- umap.defaults
+params$n_neighbors <- 15
+params$min_dist <- 0.2
+
 # get the umap representation
-dengue_umap <- umap(target)
+dengue_umap <- umap(target, config = params)
 
 # umap silhouette width
 umap_group_sil <- silhouette(group_mem, dist(dengue_umap$layout))

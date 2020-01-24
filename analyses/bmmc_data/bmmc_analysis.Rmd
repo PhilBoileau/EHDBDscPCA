@@ -208,11 +208,142 @@ The absolute valules of the loadings are not compared for this patient, since
 only three entries in the leading loadings vectors produced by scPCA are
 non-zero.
 
+
+## cPCA (Tuned with Cross-Validation)
+
+5-fold cross-validation was used to tune the contrastive parameter.
+
+```{r cpca_cv_aml027}
+# perform cv cpca
+bmmc_cpca_cv <- readRDS(file = here("analyses/bmmc_data/data/bmmc_cpca_cv_027.rds"))
+
+# compute the average silhouette widths
+cpca_cv_group_sil <- silhouette(group_mem, dist(bmmc_cpca_cv$x))
+
+# plot the 2D representation
+cpca_cv_df <- data.frame(
+  cPC1 = bmmc_cpca_cv$x[, 1],
+  cPC2 = bmmc_cpca_cv$x[, 2],
+  class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_027",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+cpca_cv_p <- cpca_cv_df %>%
+  ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("cPCA") +
+  scale_colour_viridis_d(name = "AML027",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+cpca_cv_p
+```
+
+
+
+## scPCA (Tuned with Cross-Validation)
+
+5-fold cross-validation was used to tune the contrastive parameter.
+
+```{r scpca_cv_aml027}
+# perform cv cpca
+bmmc_scpca_cv <- readRDS(file = here("analyses/bmmc_data/data/bmmc_scpca_cv_027.rds"))
+
+# compute the average silhouette widths
+scpca_cv_group_sil <- silhouette(group_mem, dist(bmmc_scpca_cv$x))
+
+# plot the 2D representation
+scpca_cv_df <- data.frame(
+  scPC1 = bmmc_scpca_cv$x[, 1],
+  scPC2 = bmmc_scpca_cv$x[, 2],
+  class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_027",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+scpca_cv_p <- scpca_cv_df %>%
+  ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("scPCA") +
+  scale_colour_viridis_d(name = "AML027",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+scpca_cv_p
+```
+
+
 ## t-SNE
 
-```{r tsne_pat027}
+### With Initial PCA Step
+
+```{r tsne_pat027_pca, cache=TRUE}
 # get tsne representation
-bmmc_tsne <- Rtsne(as.matrix(patient_027))
+bmmc_tsne_pca <- Rtsne(as.matrix(patient_027), perplexity = 30, max_iter = 1000,
+                       pca = TRUE, theta = 0)
+
+# compute the average silhouette widths
+tsne_pca_group_sil <- silhouette(group_mem, dist(bmmc_tsne_pca$Y))
+
+# plot the first two axes
+tsne_pca_df <- data.frame(
+  TSNE1 = bmmc_tsne_pca$Y[, 1],
+  TSNE2 = bmmc_tsne_pca$Y[, 2],
+  class = factor(pat027_class, levels = c("pre_trans_027", "post_trans_027"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_027",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+tsne_pca_p <- tsne_pca_df %>%
+  ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("t-SNE") +
+  xlab("tSNE1") +
+  ylab("tSNE2") +
+  scale_colour_viridis_d(name = "AML027",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+tsne_pca_p
+```
+
+### Without Initial PCA Step
+
+```{r tsne_pat027, cache=TRUE}
+# get tsne representation
+bmmc_tsne <- Rtsne(as.matrix(patient_027), perplexity = 30, max_iter = 1000,
+                   pca = FALSE, theta = 0)
 
 # compute the average silhouette widths
 tsne_group_sil <- silhouette(group_mem, dist(bmmc_tsne$Y))
@@ -249,12 +380,11 @@ tsne_p <- tsne_df %>%
 tsne_p
 ```
 
-
 ## UMAP
 
 ```{r umap_pat027}
 # get the umap representation
-bmmc_umap <- umap(as.matrix(patient_027))
+bmmc_umap <- umap(as.matrix(patient_027), n_neighors = 30, min_dist = 0.02)
 
 # compute the average silhouette widths
 umap_group_sil <- silhouette(group_mem, dist(bmmc_umap$layout))
@@ -620,11 +750,140 @@ loadings_comp
 ```
 
 
+## cPCA (Tuned with Cross-Validation)
+
+5-fold cross-validation was used to tune the contrastive parameter.
+
+```{r cpca_cv_aml035}
+# perform cv cpca
+bmmc_cpca_cv <- readRDS(file = here("analyses/bmmc_data/data/bmmc_cpca_cv_035.rds"))
+
+# compute the average silhouette widths
+cpca_cv_group_sil <- silhouette(group_mem, dist(bmmc_cpca_cv$x))
+
+# plot the 2D representation
+cpca_cv_df <- data.frame(
+  cPC1 = bmmc_cpca_cv$x[, 1],
+  cPC2 = bmmc_cpca_cv$x[, 2],
+  class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_035",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(cpca_cv_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+cpca_cv_p <- cpca_cv_df %>%
+  ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("cPCA") +
+  scale_colour_viridis_d(name = "AML035",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+cpca_cv_p
+```
+
+
+## scPCA (Tuned with Cross-Validation)
+
+5-fold cross-validation was used to tune the contrastive parameter.
+
+```{r scpca_cv_aml035}
+# perform cv cpca
+bmmc_scpca_cv <- readRDS(file = here("analyses/bmmc_data/data/bmmc_scpca_cv_035.rds"))
+
+# compute the average silhouette widths
+scpca_cv_group_sil <- silhouette(group_mem, dist(bmmc_scpca_cv$x))
+
+# plot the 2D representation
+scpca_cv_df <- data.frame(
+  scPC1 = bmmc_scpca_cv$x[, 1],
+  scPC2 = bmmc_scpca_cv$x[, 2],
+  class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_035",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(scpca_cv_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+scpca_cv_p <- scpca_cv_df %>%
+  ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("scPCA") +
+  scale_colour_viridis_d(name = "AML035",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+scpca_cv_p
+```
+
 ## t-SNE
 
-```{r tsne_pat035}
+### With Initial PCA Step
+
+```{r tsne_pat035_pca, cache=TRUE}
 # get tsne representation
-bmmc_tsne <- Rtsne(as.matrix(patient_035))
+bmmc_tsne_pca <- Rtsne(as.matrix(patient_035), perplexity = 30, max_iter = 1000,
+                   pca = TRUE, theta = 0)
+
+# compute the average silhouette widths
+tsne_pca_group_sil <- silhouette(group_mem, dist(bmmc_tsne_pca$Y))
+
+# plot the first two axes
+tsne_pca_df <- data.frame(
+  TSNE1 = bmmc_tsne_pca$Y[, 1],
+  TSNE2 = bmmc_tsne_pca$Y[, 2],
+  class = factor(pat035_class, levels = c("pre_trans_035", "post_trans_035"))
+) %>%
+  dplyr::mutate(
+    class = if_else(
+      class == "pre_trans_035",
+      paste0(
+        "Pre (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[1], 3)),
+        ")"),
+      paste0(
+        "Post (",
+        sprintf("%.3f", round(summary(tsne_pca_group_sil)$clus.avg.widths[2], 3)),
+        ")"),
+    )
+  )
+
+
+tsne_pca_p <- tsne_pca_df %>%
+  ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
+  geom_point(alpha = 0.5) +
+  ggtitle("t-SNE") +
+  xlab("tSNE1") +
+  ylab("tSNE2") +
+  scale_colour_viridis_d(name = "AML035",
+                         begin = 0.1, end = 0.9) +
+  theme_minimal()
+tsne_pca_p
+```
+
+### Without Initial PCA Step
+
+```{r tsne_pat035, cache=TRUE}
+# get tsne representation
+bmmc_tsne <- Rtsne(as.matrix(patient_035), perplexity = 30, max_iter = 1000,
+                   pca = FALSE, theta = 0)
 
 # compute the average silhouette widths
 tsne_group_sil <- silhouette(group_mem, dist(bmmc_tsne$Y))
@@ -662,12 +921,11 @@ tsne_p <- tsne_df %>%
 tsne_p
 ```
 
-
 ## UMAP
 
 ```{r umap_pat035}
 # get the umap representation
-bmmc_umap <- umap(as.matrix(patient_035))
+bmmc_umap <- umap(as.matrix(patient_035), n_neighors = 30, min_dist = 0.02)
 
 # compute the average silhouette widths
 umap_group_sil <- silhouette(group_mem, dist(bmmc_umap$layout))

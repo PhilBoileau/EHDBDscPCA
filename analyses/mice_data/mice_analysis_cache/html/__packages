@@ -1,10 +1,4 @@
 base
-methods
-datasets
-utils
-grDevices
-graphics
-stats
 here
 tidyverse
 ggplot2
@@ -25,8 +19,6 @@ umap
 magrittr
 ggpubr
 naniar
-stats4
-parallel
 BiocGenerics
 S4Vectors
 IRanges
@@ -39,3 +31,4 @@ DelayedArray
 SummarizedExperiment
 SingleCellExperiment
 cluster
+xtable

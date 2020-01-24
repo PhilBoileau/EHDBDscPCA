@@ -39,9 +39,8 @@ patient_027 <- as.matrix(t(counts(patient_027_sce)))
 snowparam <- SnowParam(workers = 30, type = "SOCK")
 BiocParallel::register(snowparam, default = TRUE)
 bmmc_scpca <- scPCA(patient_027, background,
-                    contrasts = seq(1, 50, by = 0.5),
-                    penalties = exp(seq(log(1e-9), log(1), length.out = 80)),
+                    penalties = exp(seq(log(1e-9), log(1), length.out = 20)),
                     center = TRUE, scale = TRUE, n_centers = 2, parallel = TRUE,
-                    max_iters = 1000)
+                    max_iter = 1000)
 
 saveRDS(bmmc_scpca, file = here("analyses/bmmc_data/data/bmmc_scpca_027.rds"))
