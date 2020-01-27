@@ -918,7 +918,7 @@ nested_plot <- ggarrange(
       tsne_p, umap_p, cpca_p, scpca_p, zinbwave_p, zinbwave_b_p,
       nrow = 3, ncol = 2
   )
-ggarrange(
+comb_plot <- ggarrange(
     full_data_p, 
     nested_plot,
     p1,
@@ -926,7 +926,21 @@ ggarrange(
     labels = "AUTO",
     heights = c(1, 3, 1)
 )
+comb_plot
 ```
+
+```{r save_sim_data_plot, eval=FALSE}
+ggsave(
+  filename = "../../manuscript/figures/sim_results.png",
+  width = 178,
+  height = 240,
+  units = "mm",
+  dpi = 350,
+  plot = comb_plot,
+  scale = 1.5
+)
+```
+
 
 # Average Sil. Width Plot
 
