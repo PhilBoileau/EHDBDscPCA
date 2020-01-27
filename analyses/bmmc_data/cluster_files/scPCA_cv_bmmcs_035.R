@@ -39,7 +39,7 @@ patient_035 <- as.matrix(t(counts(patient_035_sce)))
 snowparam <- SnowParam(workers = 8, type = "SOCK")
 BiocParallel::register(snowparam, default = TRUE)
 bmmc_scpca <- scPCA(patient_035, background,
-                    penalties = exp(seq(log(1e-9), log(1), length.out = 20)),
+                    penalties = exp(seq(log(1e-9), log(1e-3), length.out = 10)),
                     center = TRUE, scale = TRUE, n_centers = 2, parallel = TRUE,
                     max_iter = 1000, cv = 5)
 
