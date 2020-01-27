@@ -925,7 +925,7 @@ comb_plot <- ggarrange(
 comb_plot
 ```
 
-```{r save_sim_data_plot, eval=FALSE}
+```{r save_dengue_data_plot, eval=FALSE}
 ggsave(
   filename = here("/manuscript/figures/dengue_results.png"),
   width = 178,

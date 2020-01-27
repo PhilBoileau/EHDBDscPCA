@@ -1057,3 +1057,15 @@ pat035_complete <- ggarrange(
 )
 pat035_complete
 ```
+
+```{r save_dengue_data_plot, eval=FALSE}
+ggsave(
+  filename = here("/manuscript/figures/dengue_results.png"),
+  width = 178,
+  height = 200,
+  units = "mm",
+  dpi = 350,
+  plot = pat035_complete,
+  scale = 1.5
+)
+```
