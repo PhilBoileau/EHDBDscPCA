@@ -914,7 +914,7 @@ umap_p
 # Combined Plots
 
 ```{r comb_plots, fig.retina=3, fig.width=8, fig.height=8}
-ggarrange(
+comb_plot <- ggarrange(
   ggarrange(pca_p, umap_p, cpca_p, scpca_p,
             ncol = 2, nrow = 2),
   loadings_comp,
@@ -922,7 +922,19 @@ ggarrange(
   labels = "AUTO",
   heights = c(2, 1)
 )
+comb_plot
 ```
 
+```{r save_sim_data_plot, eval=FALSE}
+ggsave(
+  filename = here("/manuscript/figures/dengue_results.png"),
+  width = 178,
+  height = 178,
+  units = "mm",
+  dpi = 350,
+  plot = comb_plot,
+  scale = 1.5
+)
+```
 
 
