@@ -3,6 +3,7 @@
 library(here)
 library(tidyverse)
 library(Rtsne)
+library(SingleCellExperiment)
 
 # load the data
 source(file = here("analyses/bmmc_data/helpers/load_count_data.R"))
