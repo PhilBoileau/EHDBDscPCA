@@ -300,8 +300,7 @@ scpca_cv_p
 
 ```{r tsne_pat027_pca, cache=TRUE}
 # get tsne representation
-bmmc_tsne_pca <- Rtsne(as.matrix(patient_027), perplexity = 30, max_iter = 1000,
-                       pca = TRUE, theta = 0)
+bmmc_tsne_pca <- readRDS(file = here("analyses/bmmc_data/data/bmmc_tsne_pca_027.rds"))
 
 # compute the average silhouette widths
 tsne_pca_group_sil <- silhouette(group_mem, dist(bmmc_tsne_pca$Y))
@@ -342,8 +341,7 @@ tsne_pca_p
 
 ```{r tsne_pat027, cache=TRUE}
 # get tsne representation
-bmmc_tsne <- Rtsne(as.matrix(patient_027), perplexity = 30, max_iter = 1000,
-                   pca = FALSE, theta = 0)
+bmmc_tsne <- readRDS(file = here("analyses/bmmc_data/data/bmmc_tsne_027.rds"))
 
 # compute the average silhouette widths
 tsne_group_sil <- silhouette(group_mem, dist(bmmc_tsne$Y))
@@ -1058,9 +1056,9 @@ pat035_complete <- ggarrange(
 pat035_complete
 ```
 
-```{r save_dengue_data_plot, eval=FALSE}
+```{r save_dengue_data_plot}
 ggsave(
-  filename = here("/manuscript/figures/dengue_results.png"),
+  filename = here("manuscript","figures", "aml035_results.png"),
   width = 178,
   height = 200,
   units = "mm",
