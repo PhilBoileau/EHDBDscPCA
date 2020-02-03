@@ -856,9 +856,10 @@ comb_plot <- ggarrange(
   labels = "AUTO",
   heights = c(2, 1)
 )
+comb_plot
 ```
 
-```{r save_sim_data_plot}
+```{r save_mice_data_plot}
 ggsave(
   filename = here("manuscript","figures", "mice_results.png"),
   width = 178,
