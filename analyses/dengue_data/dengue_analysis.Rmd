@@ -325,6 +325,16 @@ ggarrange(p_cpca_2, p_cpca_3, p_cpca_4, p_cpca_5,
           ncol = 2, nrow = 2)
 ```
 
+```{r save-dengue-cpca-centers}
+ggsave(
+  filename = here("manuscript", "figures", "dengue_cpca_centers.png"),
+  units = "mm",
+  width = 178,
+  height = 100,
+  scale = 1.5,
+  dpi = 350
+)
+```
 
 ## scPCA
 
@@ -370,17 +380,6 @@ scpca_p <- scpca_df %>%
                          begin = 0.1, end = 0.9) +
   theme_minimal()
 scpca_p
-```
-
-```{r save-dengue-cpca-centers}
-ggsave(
-  filename = here("manuscript", "figures", "dengue_cpca_centers.png"),
-  units = "mm",
-  width = 178,
-  height = 100,
-  scale = 1.5,
-  dpi = 350
-)
 ```
 
 
@@ -725,7 +724,7 @@ cpca_cv_df <- data.frame(
 cpca_cv_p <- cpca_cv_df %>%
   ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
   geom_point() +
-  ggtitle("cPCA") +
+  ggtitle("3-Fold CV-cPCA") +
   scale_colour_viridis_d(name = "Class",
                          begin = 0.1, end = 0.9) +
   theme_minimal()
@@ -774,7 +773,7 @@ scpca_cv_df <- data.frame(
 scpca_cv_p <- scpca_cv_df %>%
   ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
   geom_point() +
-  ggtitle("scPCA") +
+  ggtitle("3-Fold CV-scPCA") +
   scale_colour_viridis_d(name = "Class",
                          begin = 0.1, end = 0.9) +
   theme_minimal()
@@ -979,7 +978,7 @@ comb_plot <- ggarrange(
 comb_plot
 ```
 
-```{r save_dengue_data_plot, eval=FALSE}
+```{r save_dengue_data_plot}
 ggsave(
   filename = here("manuscript", "figures", "dengue_results.png"),
   width = 178,

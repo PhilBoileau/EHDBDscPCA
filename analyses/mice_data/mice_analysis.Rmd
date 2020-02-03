@@ -273,6 +273,16 @@ ggarrange(p_cpca_2, p_cpca_3, p_cpca_4, p_cpca_5,
           ncol = 2, nrow = 2)
 ```
 
+```{r save-mice-cpca-centers}
+ggsave(
+  filename = here("manuscript", "figures", "mice_cpca_centers.png"),
+  units = "mm",
+  width = 178,
+  height = 100,
+  scale = 1.5,
+  dpi = 350
+)
+```
 
 ### scPCA
 
@@ -477,6 +487,17 @@ ggarrange(p_scpca_2, p_scpca_3, p_scpca_4, p_scpca_5,
 ```
 
 
+```{r save-mice-scpca-centers}
+ggsave(
+  filename = here("manuscript", "figures", "mice_scpca_centers.png"),
+  units = "mm",
+  width = 178,
+  height = 100,
+  scale = 1.5,
+  dpi = 350
+)
+```
+
 ### Comparison of cPCA and scPCA Loadings
 
 ```{r loadings_comp, warning=FALSE, message=FALSE}
@@ -530,7 +551,7 @@ p1 <- load_diff_df %>%
              fill = sparse, alpha = sparse)) +
     geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Proteins") +
-    ylab("Standardized Abs. Loadings") +
+    ylab("Standardized Abs.\n Loadings") +
     ggtitle("First Loadings Vector Comparison") +
     scale_fill_viridis_d(name = "Method",
                          labels = c("cPCA", "scPCA"),
@@ -548,7 +569,7 @@ p2 <- load_diff_df %>%
              fill = sparse, alpha = sparse)) +
     geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Proteins") +
-    ylab("Standardized Abs. Loadings") +
+    ylab("Standardized Abs.\n Loadings") +
     ggtitle("Second Loadings Vector Comparison") +
     scale_fill_viridis_d(name = "Method",
                          labels = c("cPCA", "scPCA"),
@@ -611,7 +632,7 @@ p_cpca_cv <- ggplot(cpca_cv_df, aes(x = -cPC1, y = -cPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
-  ggtitle("5-Fold CV cPCA") +
+  ggtitle("5-Fold CV-cPCA") +
   xlab("cPC1") +
   ylab("cPC2") +
   theme_minimal()
@@ -662,11 +683,29 @@ p_scpca_cv <- ggplot(scpca_cv_df, aes(x = -scPC1, y = scPC2, colour = label)) +
   geom_point(alpha = 0.7) +
   scale_colour_viridis_d(name = "Mice",
                          begin = 0.1, end = 0.9) +
-  ggtitle("5-Fold CV scPCA") +
+  ggtitle("5-Fold CV-scPCA") +
   xlab("scPC1") +
   ylab("scPC2") +
   theme_minimal()
 p_scpca_cv
+```
+
+```{r save-mice-data-cv-plot}
+comb_cv_p <- ggarrange(
+  p_cpca_cv,
+  p_scpca_cv,
+  nrow = 1,
+  ncol = 2
+)
+ggsave(
+  filename = here("manuscript", "figures", "mice_cv_results.png"),
+  units = "mm",
+  width = 178,
+  height = 60,
+  dpi = 320,
+  scale = 1.5,
+  plot = comb_cv_p
+)
 ```
 
 ### t-SNE
@@ -753,6 +792,17 @@ p_tsne <- ggplot(tsne_df, aes(x = tSNE1, y = tSNE2, colour = label)) +
 p_tsne
 ```
 
+```{r mice_t-sne_plot}
+ggsave(
+  filename = here("manuscript", "figures", "mice_tsne.png"),
+  units = "mm",
+  width = 100,
+  height = 70,
+  scale = 1.5,
+  dpi = 350
+)
+```
+
 Since the initializations without the initial PCA step produced a qualitatively
 superior embedding, it is considered in the manuscript.
 
@@ -808,9 +858,9 @@ comb_plot <- ggarrange(
 )
 ```
 
-```{r save_sim_data_plot, eval=FALSE}
+```{r save_sim_data_plot}
 ggsave(
-  filename = here("manuscript","figures", "mice_results.png"),,
+  filename = here("manuscript","figures", "mice_results.png"),
   width = 178,
   height = 140,
   units = "mm",
