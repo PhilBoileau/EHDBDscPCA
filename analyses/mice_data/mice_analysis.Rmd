@@ -320,14 +320,14 @@ p_scpca <- ggplot(scpca_df, aes(x = -scPC1, y = scPC2, colour = label)) +
   theme_minimal()
 p_scpca
 
-# create table of proteins with non-zero weights in first and second loadings
+# create table of proteins with non-zero loadings in first and second loadings
 prot_scpca1 <- data.frame(
   "name" = str_replace(names(scpca_mice$rotation[, 1]), "_N", ""),
   "weight" = scpca_mice$rotation[, 1]
 ) %>%
   dplyr::filter(weight != 0) %>%
   xtable(
-    caption = "Proteins with non-zero weights in first scPCA loadings vector.",
+    caption = "Proteins with non-zero loadings in first scPCA loadings vector.",
     digits = 4
   )
 prot_scpca2 <- data.frame(
@@ -336,7 +336,7 @@ prot_scpca2 <- data.frame(
 ) %>%
   dplyr::filter(weight != 0) %>%
   xtable(
-    caption = "Proteins with non-zero weights in second scPCA loadings vector.",
+    caption = "Proteins with non-zero loadings in second scPCA loadings vector.",
     digits = 4
   )
 # run the code for 2-5 centers
@@ -530,7 +530,7 @@ p1 <- load_diff_df %>%
              fill = sparse, alpha = sparse)) +
     geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Proteins") +
-    ylab("Relative Abs. Weight") +
+    ylab("Standardized Abs. Loadings") +
     ggtitle("First Loadings Vector Comparison") +
     scale_fill_viridis_d(name = "Method",
                          labels = c("cPCA", "scPCA"),
@@ -548,7 +548,7 @@ p2 <- load_diff_df %>%
              fill = sparse, alpha = sparse)) +
     geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Proteins") +
-    ylab("Relative Abs. Weight") +
+    ylab("Standardized Abs. Loadings") +
     ggtitle("Second Loadings Vector Comparison") +
     scale_fill_viridis_d(name = "Method",
                          labels = c("cPCA", "scPCA"),
@@ -798,12 +798,24 @@ p_umap
 ### Combined Plot
 
 ```{r result_mice, fig.retina=3, fig.height=8, fig.width=8}
-ggarrange(
+comb_plot <- ggarrange(
   ggarrange(p_pca, p_umap, p_cpca, p_scpca,
             ncol = 2, nrow = 2),
   loadings_comp,
   nrow = 2,
   labels = "AUTO",
   heights = c(2, 1)
+)
+```
+
+```{r save_sim_data_plot, eval=FALSE}
+ggsave(
+  filename = here("manuscript","figures", "mice_results.png"),,
+  width = 178,
+  height = 140,
+  units = "mm",
+  dpi = 350,
+  plot = comb_plot,
+  scale = 1.5
 )
 ```

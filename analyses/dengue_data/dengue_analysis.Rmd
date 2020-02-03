@@ -559,7 +559,7 @@ gene_scpca1 <- rotation_df %>%
   dplyr::filter(scPCA1 != 0) %>%
   select(gene_sym, gene_title, scPCA1) %>%
   xtable(
-    caption = "Genes with non-zero weights in first scPCA loadings vector.",
+    caption = "Genes with non-zero loadings in first scPCA loadings vector.",
     digits = 4
   )
 
@@ -567,7 +567,7 @@ gene_scpca2 <- rotation_df %>%
   dplyr::filter(scPCA2 != 0) %>%
   select(gene_sym, gene_title, scPCA2) %>%
   xtable(
-    caption = "Genes with non-zero weights in second scPCA loadings vector.",
+    caption = "Genes with non-zero loadings in second scPCA loadings vector.",
     digits = 4
   )
 ```
@@ -623,7 +623,7 @@ p1 <- load_diff_df %>%
   ggplot(aes(y = comp1, x = gene1, fill = sparse, alpha = sparse)) +
     geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Gene") +
-    ylab("Relative Abs. Weight") +
+    ylab("Standardized Abs. Loadings") +
     ggtitle("First Loadings Vector Comparison") +
     scale_fill_viridis_d(name = "Method",
                          labels = c("cPCA", "scPCA"),
@@ -640,7 +640,7 @@ p2 <- load_diff_df %>%
   ggplot(aes(y = comp2, x = gene2, fill = sparse, alpha = sparse)) +
     geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Genes") +
-    ylab("Relative Abs. Weight") +
+    ylab("Standardized Abs. Loadings") +
     ggtitle("Second Loadings Vector Comparison") +
     scale_fill_viridis_d(name = "Method",
                          labels = c("cPCA", "scPCA"),
@@ -927,9 +927,9 @@ comb_plot
 
 ```{r save_dengue_data_plot, eval=FALSE}
 ggsave(
-  filename = here("/manuscript/figures/dengue_results.png"),
+  filename = here("manuscript", "figures", "dengue_results.png"),
   width = 178,
-  height = 178,
+  height = 140,
   units = "mm",
   dpi = 350,
   plot = comb_plot,

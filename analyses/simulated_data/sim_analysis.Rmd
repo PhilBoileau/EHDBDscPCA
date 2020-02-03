@@ -381,7 +381,7 @@ p1 <- load_diff_df %>%
              fill = sparse, alpha = sparse)) +
   geom_bar(stat = "identity", position = position_identity(), width = 1) +
   xlab("Genes") +
-  ylab("Relative Abs. Weight") +
+  ylab("Standardized Abs. Loadings") +
   ggtitle("First Loadings Vector Comparison") +
   scale_fill_viridis_d(name = "Method",
                        labels = c("cPCA", "scPCA"),
@@ -931,9 +931,9 @@ comb_plot
 
 ```{r save_sim_data_plot, eval=FALSE}
 ggsave(
-  filename = "../../manuscript/figures/sim_results.png",
+  filename = here("manuscript", "figures", "sim_results.png"),
   width = 178,
-  height = 240,
+  height = 178,
   units = "mm",
   dpi = 350,
   plot = comb_plot,
@@ -979,7 +979,7 @@ ave_sil_width_df <- data.frame(
 set.seed(210)
 ave_sil_width_df %>%
   ggplot(aes(x = method, y = ave_sil, shape = type, colour = type)) +
-    geom_jitter(width = 0.2, height = 0, size = 2) +
+    geom_jitter(width = 0.2, height = 0, size = 3) +
     ylab("Ave. Sil. Widths") +
     xlab("Method") +
     ggtitle("Comparison of Technical Effect Removal, Simulated scRNA-seq Data") +

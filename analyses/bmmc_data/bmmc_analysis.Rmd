@@ -202,7 +202,7 @@ rot_pat027_df <- bmmc_scpca$rotation %>%
 rot_pat027_df
 ```
 
-### Comparison of Loadings Weights: cPCA and scPCA
+### Comparison of Loadings: cPCA and scPCA
 
 The absolute valules of the loadings are not compared for this patient, since
 only three entries in the leading loadings vectors produced by scPCA are
@@ -658,7 +658,7 @@ rot_035_df <- bmmc_scpca$rotation %>%
 rot_035_df
 ```
 
-### Comparison of Loadings Weights: cPCA and scPCA
+### Comparison of Loadings: cPCA and scPCA
 
 ```{r pat035_comp, message = FALSE, warning = FALSE}
 # compute the relative absolute loading ratios
@@ -710,7 +710,7 @@ p1 <- load_diff_df %>%
   ggplot(aes(y = abs(comp1), x = gene1, fill = sparse, alpha = sparse)) +
   geom_bar(stat = "identity", position = position_identity(), width = 1) +
   xlab("Genes") +
-  ylab("Relative Abs. Weight") +
+  ylab("Standardized Abs. Loadings") +
   ggtitle("First Loadings Vector Comparison") +
   scale_fill_viridis_d(name = "Method",
                        labels = c("cPCA", "scPCA"),
@@ -727,7 +727,7 @@ p2 <- load_diff_df %>%
   ggplot(aes(y = abs(comp2), x = gene2, fill = sparse, alpha = sparse)) +
   geom_bar(stat = "identity", position = position_identity(), width = 1) +
   xlab("Genes") +
-  ylab("Relative Abs. Weight") +
+  ylab("Standardized Abs. Loadings") +
   ggtitle("Second Loadings Vector Comparison") +
   scale_fill_viridis_d(name = "Method",
                        labels = c("cPCA", "scPCA"),
@@ -1060,7 +1060,7 @@ pat035_complete
 ggsave(
   filename = here("manuscript","figures", "aml035_results.png"),
   width = 178,
-  height = 200,
+  height = 160,
   units = "mm",
   dpi = 350,
   plot = pat035_complete,
