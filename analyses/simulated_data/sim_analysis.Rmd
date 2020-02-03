@@ -211,79 +211,6 @@ cpca_p <- cpca_df %>%
 cpca_p
 ```
 
-### Effect of Contrastive Parameter
-
-```{r traditional_cPCA, fig.retina=3, fig.width=8, fig.height=10}
-set.seed(235132)
-
-# perform traditional cPCA
-trad_cpca_sim <- scPCA(
-  tg, bg, center = TRUE, scale = TRUE, penalties = 0,
-  n_medoids = 8, n_centers = 1,
-  contrasts = exp(seq(log(1),log(100000), length.out = 40))
-)
-
-# plot all 8 medoids
-trad_cpca_plots <- lapply(
-  seq_len(8),
-  function(med) {
-    
-    # get silhouette widths
-  cpca_batch_sil <- silhouette(batch_mem, dist(trad_cpca_sim$x[[med]]))
-  cpca_group_sil <- silhouette(group_mem, dist(trad_cpca_sim$x[[med]]))
-    
-   data.frame(
-      cPC1 = trad_cpca_sim$x[[med]][, 1],
-      cPC2 = trad_cpca_sim$x[[med]][, 2],
-      group = target_group,
-      batch = target_batch
-    ) %>%
-    dplyr::mutate(
-      batch = if_else(
-        batch == "Batch1",
-        paste0("1 (",
-               sprintf("%.3f", round(summary(cpca_batch_sil)$clus.avg.widths[1], 3)),
-                       ")"),
-        paste0("2 (",
-               sprintf("%.3f", round(summary(cpca_batch_sil)$clus.avg.widths[2], 3)),
-               ")")),
-      group = if_else(
-        group == "Group1",
-        paste0("1 (",
-               sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[1], 3)),
-               ")"),
-        paste0("2 (",
-               sprintf("%.3f", round(summary(cpca_group_sil)$clus.avg.widths[2], 3)),
-               ")"))
-      ) %>%
-      ggplot(aes(x = cPC1, y = cPC2, colour = group, shape = batch)) +
-        geom_point() +
-        ggtitle(paste0("Contrastive Parameter = ",
-                       round(trad_cpca_sim$contrast[med], 2))) +
-        scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
-                               begin = 0.1, end = 0.9) +
-        scale_shape_discrete(name = "Batch (Ave. S.W.)") +
-        guides(shape = guide_legend(override.aes = list(size = 1),
-                                    order = 1),
-               colour = guide_legend(override.aes = list(size = 1),
-                                     order = 2)) +
-        theme_minimal() +
-        theme(legend.title = element_text(size = 10), 
-              legend.text = element_text(size = 10),
-              legend.key.size = unit(0.5, "lines"),
-              legend.position = "right")
-  })
-
-# plot a single grid
-ggarrange(
-  trad_cpca_plots[[1]], trad_cpca_plots[[2]], trad_cpca_plots[[3]],
-  trad_cpca_plots[[4]], trad_cpca_plots[[5]], trad_cpca_plots[[6]],
-  trad_cpca_plots[[7]], trad_cpca_plots[[8]],
-  nrow = 4, ncol = 2
-  )
-```
-
-
 ## scPCA
 
 ```{r scpca, cache = TRUE}
@@ -434,6 +361,18 @@ scpca_table %>%
     theme_minimal()
 ```
 
+```{r save_sim_de_genes}
+ggsave(
+  filename = here("manuscript", "figures", "sim_de_genes.png"),
+  width = 178,
+  height = 130,
+  units = "mm",
+  dpi = 320,
+  scale = 1.5
+)
+```
+
+
 Of the `r nrow(scpca_table)` differentially expressed genes, scPCA identified
 the most prominent.  Of the `r length(which(sim_scpca$rotation[, 1] != 0))`
 genes with non-zero values in the first row of scPCA's loading matrix,
@@ -479,7 +418,7 @@ cpca_cv_df <- data.frame(
 cpca_cv_p <- cpca_cv_df %>%
   ggplot(aes(x = cPC1, y = cPC2, colour = group, shape = batch)) +
   geom_point() +
-  ggtitle("5-Fold CV cPCA") +
+  ggtitle("5-Fold CV-cPCA") +
   scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
                          begin = 0.1, end = 0.9) +
   scale_shape_discrete(name = "Batch (Ave. S.W.)") +
@@ -538,7 +477,7 @@ scpca_cv_df <- data.frame(
 scpca_cv_p <- scpca_cv_df %>%
   ggplot(aes(x = scPC1, y = scPC2, colour = group, shape = batch)) +
   geom_point() +
-  ggtitle("scPCA") +
+  ggtitle("5-Fold CV-cPCA") +
   scale_colour_viridis_d(name = "Groups (Ave. S.W.)",
                          begin = 0.1, end = 0.9) +
   scale_shape_discrete(name = "Batch (Ave. S.W.)") +
@@ -553,6 +492,25 @@ scpca_cv_p <- scpca_cv_df %>%
         legend.position = "right")
 scpca_cv_p
 ```
+
+```{r save-sim-data-cv-plot}
+comb_cv_p <- ggarrange(
+  cpca_cv_p,
+  scpca_cv_p,
+  nrow = 1,
+  ncol = 2
+)
+ggsave(
+  filename = here("manuscript", "figures", "sim_cv_results.png"),
+  unit = "mm",
+  width = 178,
+  height = 60,
+  dpi = 320,
+  scale = 1.5,
+  plot = comb_cv_p
+)
+```
+
 
 ## t-SNE
 
@@ -669,8 +627,8 @@ tsne_p <- tsne_df %>%
 tsne_p
 ```
 
-Since both initializations produced qualitatively identical embeddings, t-SNE
-without the initial PCA step is considered in the manuscript.
+Since the embedding produced by t-SNE with a preliminary PCA step is
+qualitatively better than that without, it is considered in the manuscript.
 
 ## UMAP
 
@@ -905,8 +863,8 @@ simlr_p <- simlr_df %>%
         legend.key.size = unit(0.5, "lines"),
         legend.position = "right")
 
-ggsave(here("manuscript/figures/simulated_SIMLR.png"),
-       width = 15, height = 10, units = "cm", dpi = 300)
+ggsave(here("manuscript", "figures", "simulated_SIMLR.png"),
+       width = 15, height = 10, units = "cm", dpi = 320)
 
 simlr_p
 ```
@@ -915,7 +873,7 @@ simlr_p
 
 ```{r comb_plots, fig.retina=3, fig.width=8, fig.height=10}
 nested_plot <- ggarrange(
-      tsne_p, umap_p, cpca_p, scpca_p, zinbwave_p, zinbwave_b_p,
+      tsne_pca_p, umap_p, cpca_p, scpca_p, zinbwave_p, zinbwave_b_p,
       nrow = 3, ncol = 2
   )
 comb_plot <- ggarrange(
@@ -929,7 +887,7 @@ comb_plot <- ggarrange(
 comb_plot
 ```
 
-```{r save_sim_data_plot, eval=FALSE}
+```{r save_sim_data_plot}
 ggsave(
   filename = here("manuscript", "figures", "sim_results.png"),
   width = 178,
@@ -960,8 +918,8 @@ ave_sil_width_df <- data.frame(
                 summary(cpca_batch_sil)$clus.avg.widths,
                 summary(scpca_group_sil)$clus.avg.widths,
                 summary(scpca_batch_sil)$clus.avg.widths,
-                summary(tsne_group_sil)$clus.avg.widths,
-                summary(tsne_batch_sil)$clus.avg.widths,
+                summary(tsne_pca_group_sil)$clus.avg.widths,
+                summary(tsne_pca_batch_sil)$clus.avg.widths,
                 summary(umap_group_sil)$clus.avg.widths,
                 summary(umap_batch_sil)$clus.avg.widths,
                 summary(zinb_group_sil)$clus.avg.widths,
@@ -969,9 +927,9 @@ ave_sil_width_df <- data.frame(
                 summary(zinb_b_group_sil)$clus.avg.widths,
                 summary(zinb_b_batch_sil)$clus.avg.widths),
   "type" = rep(c("Group 1", "Group 2", "Batch 1", "Batch 2"), length.out = 28),
-  "method" = factor(rep(c("PCA", "cPCA", "scPCA", "t-SNE", "UMAP",
+  "method" = factor(rep(c("PCA", "cPCA", "scPCA", "t-SNE (PCA)", "UMAP",
                    "ZINB-WaVE (No Batch)", "ZINB-WaVE (Batch)"), each = 4),
-                   c("scPCA", "ZINB-WaVE (Batch)", "cPCA", "UMAP", "t-SNE",
+                   c("scPCA", "ZINB-WaVE (Batch)", "cPCA", "t-SNE (PCA)", "UMAP",
                      "ZINB-WaVE (No Batch)", "PCA"))
 )
 
@@ -988,6 +946,15 @@ ave_sil_width_df %>%
     scale_colour_manual(name = "Source",
                         values = c("red", "red", "blue", "blue")) +
     theme_minimal()
+
+ggsave(
+  filename = here("manuscript", "figures", "technical_effect_removal_sim.png"),
+  units = "mm",
+  width = 178,
+  height = 100,
+  dpi = 320,
+  scale = 1.5
+)
 ```
 
 
