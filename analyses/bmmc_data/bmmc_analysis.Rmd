@@ -243,7 +243,7 @@ cpca_cv_df <- data.frame(
 cpca_cv_p <- cpca_cv_df %>%
   ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
   geom_point(alpha = 0.5) +
-  ggtitle("cPCA") +
+  ggtitle("5-Fold CV-cPCA") +
   scale_colour_viridis_d(name = "AML027",
                          begin = 0.1, end = 0.9) +
   theme_minimal()
@@ -286,11 +286,29 @@ scpca_cv_df <- data.frame(
 scpca_cv_p <- scpca_cv_df %>%
   ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
   geom_point(alpha = 0.5) +
-  ggtitle("scPCA") +
+  ggtitle("5-Fold CV-scPCA") +
   scale_colour_viridis_d(name = "AML027",
                          begin = 0.1, end = 0.9) +
   theme_minimal()
 scpca_cv_p
+```
+
+```{r save-aml027-data-cv-plot}
+comb_cv_p <- ggarrange(
+  cpca_cv_p,
+  scpca_p,
+  nrow = 1,
+  ncol = 2
+)
+ggsave(
+  filename = here("manuscript", "figures", "aml027_cv_results.png"),
+  units = "mm",
+  width = 178,
+  height = 60,
+  dpi = 320,
+  scale = 1.5,
+  plot = comb_cv_p
+)
 ```
 
 
@@ -511,6 +529,18 @@ pat027_p <- ggarrange(pca_p, zinbwave_p, tsne_p, umap_p, cpca_p, scpca_p,
 pat027_p
 ```
 
+
+```{r save_aml_027_data_plot}
+ggsave(
+  filename = here("manuscript","figures", "aml027_results.png"),
+  width = 178,
+  height = 150,
+  units = "mm",
+  dpi = 350,
+  plot = pat027_p,
+  scale = 1.5
+)
+```
 
 # AML035
 
@@ -782,7 +812,7 @@ cpca_cv_df <- data.frame(
 cpca_cv_p <- cpca_cv_df %>%
   ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
   geom_point(alpha = 0.5) +
-  ggtitle("cPCA") +
+  ggtitle("5-Fold cPCA") +
   scale_colour_viridis_d(name = "AML035",
                          begin = 0.1, end = 0.9) +
   theme_minimal()
@@ -824,11 +854,29 @@ scpca_cv_df <- data.frame(
 scpca_cv_p <- scpca_cv_df %>%
   ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
   geom_point(alpha = 0.5) +
-  ggtitle("scPCA") +
+  ggtitle("5-Fold CV-scPCA") +
   scale_colour_viridis_d(name = "AML035",
                          begin = 0.1, end = 0.9) +
   theme_minimal()
 scpca_cv_p
+```
+
+```{r save-aml035-data-cv-plot}
+comb_cv_p <- ggarrange(
+  cpca_cv_p,
+  scpca_p,
+  nrow = 1,
+  ncol = 2
+)
+ggsave(
+  filename = here("manuscript", "figures", "aml035_cv_results.png"),
+  units = "mm",
+  width = 178,
+  height = 60,
+  dpi = 320,
+  scale = 1.5,
+  plot = comb_cv_p
+)
 ```
 
 ## t-SNE
