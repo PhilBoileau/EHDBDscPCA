@@ -308,7 +308,7 @@ p1 <- load_diff_df %>%
              fill = sparse, alpha = sparse)) +
   geom_bar(stat = "identity", position = position_identity(), width = 1) +
   xlab("Genes") +
-  ylab("Standardized Abs. Loadings") +
+  ylab("Standardized Abs.\n Loadings") +
   ggtitle("First Loadings Vector Comparison") +
   scale_fill_viridis_d(name = "Method",
                        labels = c("cPCA", "scPCA"),

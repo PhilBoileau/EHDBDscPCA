@@ -372,6 +372,18 @@ scpca_p <- scpca_df %>%
 scpca_p
 ```
 
+```{r save-dengue-cpca-centers}
+ggsave(
+  filename = here("manuscript", "figures", "dengue_cpca_centers.png"),
+  units = "mm",
+  width = 178,
+  height = 100,
+  scale = 1.5,
+  dpi = 350
+)
+```
+
+
 ### scPCA Number of Centers
 
 ```{r scpca_diff_centers, fig.retina=3, fig.width=8, fig.height=8}
@@ -532,6 +544,18 @@ ggarrange(p_scpca_2, p_scpca_3, p_scpca_4, p_scpca_5,
 ```
 
 
+```{r svae-dengue-scpca-centers}
+ggsave(
+  filename = here("manuscript", "figures", "dengue_scpca_centers.png"),
+  units = "mm",
+  width = 178,
+  height = 100,
+  scale = 1.5,
+  dpi = 350
+)
+```
+
+
 ### Genes With Non-Zero Loadings
 
 Tables included in the appendix of the manuscript.
@@ -623,7 +647,7 @@ p1 <- load_diff_df %>%
   ggplot(aes(y = comp1, x = gene1, fill = sparse, alpha = sparse)) +
     geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Gene") +
-    ylab("Standardized Abs. Loadings") +
+    ylab("Standardized Abs.\n Loadings") +
     ggtitle("First Loadings Vector Comparison") +
     scale_fill_viridis_d(name = "Method",
                          labels = c("cPCA", "scPCA"),
@@ -640,7 +664,7 @@ p2 <- load_diff_df %>%
   ggplot(aes(y = comp2, x = gene2, fill = sparse, alpha = sparse)) +
     geom_bar(stat = "identity", position = position_identity(), width = 1) +
     xlab("Genes") +
-    ylab("Standardized Abs. Loadings") +
+    ylab("Standardized Abs.\n Loadings") +
     ggtitle("Second Loadings Vector Comparison") +
     scale_fill_viridis_d(name = "Method",
                          labels = c("cPCA", "scPCA"),
@@ -758,6 +782,24 @@ scpca_cv_p
 ```
 
 
+```{r save-dengue-data-cv-plot}
+comb_cv_p <- ggarrange(
+  cpca_cv_p,
+  scpca_cv_p,
+  nrow = 1,
+  ncol = 2
+)
+ggsave(
+  filename = here("manuscript", "figures", "dengue_cv_results.png"),
+  units = "mm",
+  width = 178,
+  height = 60,
+  dpi = 320,
+  scale = 1.5,
+  plot = comb_cv_p
+)
+```
+
 ## t-SNE
 
 ### With Initial PCA Step
@@ -856,6 +898,18 @@ tsne_p <- tsne_df %>%
   theme_minimal()
 tsne_p
 ```
+
+```{r dengue_t-sne_plot}
+ggsave(
+  filename = here("manuscript", "figures", "dengue_tsne.png"),
+  units = "mm",
+  width = 100,
+  height = 70,
+  scale = 1.5,
+  dpi = 350
+)
+```
+
 
 Since both initializations produced qualitatively identical embeddings, t-SNE
 without the initial PCA step is considered in the manuscript.
