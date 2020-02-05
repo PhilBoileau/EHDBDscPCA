@@ -39,12 +39,6 @@ sim_groups_sce <- sim_groups_sce[which(rowVars(counts(sim_groups_sce)) != 0), ]
 tg <- t(logcounts(sim_groups_sce)[, which(sim_groups_sce$Group != "Group2")])
 bg <- t(logcounts(sim_groups_sce)[, which(sim_groups_sce$Group == "Group2")])
 
-# get the batch and group labels
-target_batch <- sim_groups_sce$Batch[which(sim_groups_sce$Group != "Group2")]
-target_group <- sim_groups_sce$Group[which(sim_groups_sce$Group != "Group2")]
-batch_mem <- if_else(target_batch == "Batch1", 1, 2)
-group_mem <- if_else(target_group == "Group1", 1, 2)
-
 set.seed(412321)
 
 # start the microbenchmarking
@@ -78,7 +72,8 @@ sim_microbench <- microbenchmark(
     K = 2,
     X = "~Batch"
   ),
-  "SIMLR" = SIMLR(X = t(scale(tg)), c = 2, no.dim = 2, normalize = FALSE),
+  "SIMLR" = SIMLR(X = t(scale(tg)), c = 2, no.dim = 2, normalize = FALSE,
+                  cores.ratio = 4),
   times = 10,
   control = list(order = "block")
 )
