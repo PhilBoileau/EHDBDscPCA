@@ -32,7 +32,7 @@ patient_027_sce <- core[, which(core$cell_prov %in%
 patient_027 <- as.matrix(counts(patient_027_sce))
 
 # perform zinbwave
-bmmc_simlr <- SIMLR(X = scale(patient_027), c = 2, no.dim = 2)
+bmmc_simlr <- SIMLR(X = scale(patient_027), c = 2, no.dim = 2, k = 30)
 
 saveRDS(bmmc_simlr,
         file = here("analyses/bmmc_data/data/bmmc_simlr_027.rds"))
