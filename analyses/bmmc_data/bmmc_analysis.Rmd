@@ -297,7 +297,7 @@ scpca_cv_p
 ```{r save-aml027-data-cv-plot}
 comb_cv_p <- ggarrange(
   cpca_cv_p,
-  scpca_p,
+  scpca_cv_p,
   nrow = 1,
   ncol = 2
 )
@@ -865,7 +865,7 @@ scpca_cv_p
 ```{r save-aml035-data-cv-plot}
 comb_cv_p <- ggarrange(
   cpca_cv_p,
-  scpca_p,
+  scpca_cv_p,
   nrow = 1,
   ncol = 2
 )
