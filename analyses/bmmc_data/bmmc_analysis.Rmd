@@ -14,6 +14,7 @@ library(umap)
 library(ggpubr)
 library(SingleCellExperiment)
 library(cluster)
+library(microbenchmark)
 
 knitr::opts_chunk$set(echo = FALSE)
 ```
@@ -1112,6 +1113,39 @@ ggsave(
   units = "mm",
   dpi = 350,
   plot = pat035_complete,
+  scale = 1.5
+)
+```
+
+# Running Time Analysis
+
+The median running times over 5 repetitions of each method are presented below.
+
+```{r rt-analysis}
+# load the results (see rt_analysis.R in cluster_files)
+rt_analysis <- readRDS(
+  file = here("analyses", "bmmc_data", "data", "aml035_microbench.rds")
+)
+
+# plot the results
+rt_plot <- ggplot(summary(rt_analysis), aes(x = expr, y = median)) +
+  geom_point() +
+  scale_y_log10() +
+  ggtitle("Running Time Analysis: Simulated scRNA-seq Data") +
+  xlab("") +
+  ylab("Median Running Time (Seconds)") +
+  coord_flip() +
+  theme_minimal()
+rt_plot
+```
+
+```{r save-plot-rt-analysis}
+ggsave(
+  filename = here("manuscript", "figures", "rt_analsysis_aml035.png"),
+  units = "mm",
+  width = 178,
+  height = 100,
+  dpi = 320,
   scale = 1.5
 )
 ```
