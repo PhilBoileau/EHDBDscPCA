@@ -1131,7 +1131,7 @@ rt_analysis <- readRDS(
 rt_plot <- ggplot(summary(rt_analysis), aes(x = expr, y = median)) +
   geom_point() +
   scale_y_log10() +
-  ggtitle("Running Time Analysis: Simulated scRNA-seq Data") +
+  ggtitle("Running Time Analysis: AML Patient 035 scRNA-seq Data") +
   xlab("") +
   ylab("Median Running Time (Seconds)") +
   coord_flip() +
