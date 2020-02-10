@@ -74,10 +74,10 @@ aml035_microbench <- microbenchmark(
   ),
   "SIMLR" = SIMLR(X = scale(patient_035), c = 2, no.dim = 2, k = 30,
                   normalize = FALSE),
-  times = 5,
-  control = list(order = "block")
+  times = 3,
+  control = list(order = "block", warmup = 0)
 )
 
 # save the file for later
 write_rds(aml035_microbench,
-          path = here("analyses/simulated_data/data/aml035_microbench.rds"))
+          path = here("analyses/bmmc_data/data/aml035_microbench.rds"))
