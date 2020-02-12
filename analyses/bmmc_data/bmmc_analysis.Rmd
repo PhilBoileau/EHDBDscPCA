@@ -741,7 +741,7 @@ p1 <- load_diff_df %>%
   ggplot(aes(y = abs(comp1), x = gene1, fill = sparse, alpha = sparse)) +
   geom_bar(stat = "identity", position = position_identity(), width = 1) +
   xlab("Genes") +
-  ylab("Standardized Abs. Loadings") +
+  ylab("Standardized Abs.\n Loadings") +
   ggtitle("First Loadings Vector Comparison") +
   scale_fill_viridis_d(name = "Method",
                        labels = c("cPCA", "scPCA"),
@@ -758,7 +758,7 @@ p2 <- load_diff_df %>%
   ggplot(aes(y = abs(comp2), x = gene2, fill = sparse, alpha = sparse)) +
   geom_bar(stat = "identity", position = position_identity(), width = 1) +
   xlab("Genes") +
-  ylab("Standardized Abs. Loadings") +
+  ylab("Standardized Abs.\n Loadings") +
   ggtitle("Second Loadings Vector Comparison") +
   scale_fill_viridis_d(name = "Method",
                        labels = c("cPCA", "scPCA"),
