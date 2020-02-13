@@ -38,8 +38,6 @@
     \usepackage{longtable}
     \usepackage[ruled,vlined,linesnumbered]{algorithm2e}
     \usepackage{placeins}
-    \usepackage{multibib}
-    \newcites{SM}{Supplementary Information References}
 
     % cause issues with Bioinformatics
     \usepackage[utf8]{inputenc} % allow utf-8 input
@@ -57,11 +55,11 @@
 \makeatletter\renewcommand*{\fps@figure}{H}\makeatother
 \DeclareMathOperator*{\argmax}{argmax}
 \DeclareMathOperator*{\argmin}{argmin}
-\newcommand{\beginsupplement}{%
+\newcommand{\beginsupplement}{
         \setcounter{table}{0}
-        \renewcommand{\thetable}{S\arabic{table}}%
+        \renewcommand{\thetable}{S\arabic{table}}
         \setcounter{figure}{0}
-        \renewcommand{\thefigure}{S\arabic{figure}}%
+        \renewcommand{\thefigure}{S\arabic{figure}}
         \setcounter{section}{0}
-        \renewcommand{\thesection}{S\arabic{section}}%
+        \renewcommand{\thesection}{S\arabic{section}}
      }
