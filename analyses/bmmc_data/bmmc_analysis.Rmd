@@ -94,7 +94,7 @@ pca_df <- data.frame(
   )
 pca_p <- pca_df %>%
   ggplot(aes(x = PC1, y = PC2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("PCA") +
   scale_colour_viridis_d(name = "AML027",
                          begin = 0.1, end = 0.9) +
@@ -137,7 +137,7 @@ cpca_df <- data.frame(
 
 cpca_p <- cpca_df %>%
   ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("cPCA") +
   scale_colour_viridis_d(name = "AML027",
                          begin = 0.1, end = 0.9) +
@@ -177,7 +177,7 @@ scpca_df <- data.frame(
 
 scpca_p <- scpca_df %>%
   ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("scPCA") +
   scale_colour_viridis_d(name = "AML027",
                          begin = 0.1, end = 0.9) +
@@ -243,7 +243,7 @@ cpca_cv_df <- data.frame(
 
 cpca_cv_p <- cpca_cv_df %>%
   ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("5-Fold CV-cPCA") +
   scale_colour_viridis_d(name = "AML027",
                          begin = 0.1, end = 0.9) +
@@ -286,7 +286,7 @@ scpca_cv_df <- data.frame(
 
 scpca_cv_p <- scpca_cv_df %>%
   ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("5-Fold CV-scPCA") +
   scale_colour_viridis_d(name = "AML027",
                          begin = 0.1, end = 0.9) +
@@ -346,7 +346,7 @@ tsne_pca_df <- data.frame(
 
 tsne_pca_p <- tsne_pca_df %>%
   ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("t-SNE") +
   xlab("tSNE1") +
   ylab("tSNE2") +
@@ -387,7 +387,7 @@ tsne_df <- data.frame(
 
 tsne_p <- tsne_df %>%
   ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("t-SNE") +
   xlab("tSNE1") +
   ylab("tSNE2") +
@@ -429,7 +429,7 @@ colnames(umap_df) <- c("UMAP1", "UMAP2", "class")
 
 umap_p <- umap_df %>%
   ggplot(aes(x = UMAP1, y = UMAP2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("UMAP") +
   scale_colour_viridis_d(name = "AML027",
                          begin = 0.1, end = 0.9) +
@@ -470,7 +470,7 @@ zinbwave_df <- data.frame(
 
 zinbwave_p <- zinbwave_df %>%
   ggplot(aes(x = ZW1, y = ZW2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("ZINB-WaVE") +
   scale_colour_viridis_d(name = "AML027",
                          begin = 0.1, end = 0.9) +
@@ -509,7 +509,7 @@ simlr_df <- data.frame(
 
 simlr_p <- simlr_df %>%
   ggplot(aes(x = SIMLR1, y = SIMLR2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("SIMLR") +
   scale_colour_viridis_d(name = "AML027",
                          begin = 0.1, end = 0.9) +
@@ -577,7 +577,7 @@ pca_df <- data.frame(
 
 pca_p <- pca_df %>%
   ggplot(aes(x = PC1, y = PC2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("PCA") +
   scale_colour_viridis_d(name = "AML035",
                          begin = 0.1, end = 0.9) +
@@ -621,7 +621,7 @@ cpca_df <- data.frame(
 
 cpca_p <- cpca_df %>%
   ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("cPCA") +
   scale_colour_viridis_d(name = "AML035",
                          begin = 0.1, end = 0.9) +
@@ -631,7 +631,6 @@ cpca_p
 
 
 ## scPCA
-
 
 ```{r scpca_pat035}
 # load results from cluster files
@@ -662,7 +661,7 @@ scpca_df <- data.frame(
 
 scpca_p <- scpca_df %>%
   ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("scPCA") +
   scale_colour_viridis_d(name = "AML035",
                          begin = 0.1, end = 0.9) +
@@ -812,7 +811,7 @@ cpca_cv_df <- data.frame(
 
 cpca_cv_p <- cpca_cv_df %>%
   ggplot(aes(x = cPC1, y = cPC2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("5-Fold cPCA") +
   scale_colour_viridis_d(name = "AML035",
                          begin = 0.1, end = 0.9) +
@@ -854,7 +853,7 @@ scpca_cv_df <- data.frame(
 
 scpca_cv_p <- scpca_cv_df %>%
   ggplot(aes(x = scPC1, y = scPC2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("5-Fold CV-scPCA") +
   scale_colour_viridis_d(name = "AML035",
                          begin = 0.1, end = 0.9) +
@@ -915,7 +914,7 @@ tsne_pca_df <- data.frame(
 
 tsne_pca_p <- tsne_pca_df %>%
   ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("t-SNE") +
   xlab("tSNE1") +
   ylab("tSNE2") +
@@ -958,7 +957,7 @@ tsne_df <- data.frame(
 
 tsne_p <- tsne_df %>%
   ggplot(aes(x = TSNE1, y = TSNE2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("t-SNE") +
   xlab("tSNE1") +
   ylab("tSNE2") +
@@ -1000,7 +999,7 @@ colnames(umap_df) <- c("UMAP1", "UMAP2", "class")
 
 umap_p <- umap_df %>%
   ggplot(aes(x = UMAP1, y = UMAP2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("UMAP") +
   scale_colour_viridis_d(name = "AML035",
                          begin = 0.1, end = 0.9) +
@@ -1040,7 +1039,7 @@ zinbwave_df <- data.frame(
 
 zinbwave_p <- zinbwave_df %>%
   ggplot(aes(x = ZW1, y = ZW2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("ZINB-WaVE") +
   scale_colour_viridis_d(name = "AML035",
                          begin = 0.1, end = 0.9) +
@@ -1078,7 +1077,7 @@ simlr_df <- data.frame(
 
 simlr_p <- simlr_df %>%
   ggplot(aes(x = SIMLR1, y = SIMLR2, colour = class)) +
-  geom_point(alpha = 0.5) +
+  geom_point(alpha = 0.5, size = 0.3) +
   ggtitle("SIMLR") +
   scale_colour_viridis_d(name = "AML035",
                          begin = 0.1, end = 0.9) +
