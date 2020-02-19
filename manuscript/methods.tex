@@ -1,26 +1,26 @@
 \subsection{Sparse Contrastive PCA}
 
-The sparse contrastive PCA (scPCA) procedure applies SPCA with minimal modifications \edit{to a pair of target
-and background datasets' contrastive covariance matrix $\mathbf{C}_\gamma$}. The
-numerical solution to the SPCA criterion of Equation \eqref{eq:spca} is obtained by
-the following alternating algorithm until convergence of the sparse loadings
-\citep{Zou2006}, \edit{where $\mathbf{A}_{p\times k}$ is initialized as the
-matrix of loadings belonging to the $k$ leading principal components of
-$\mathbf{C}_\gamma$:}
+The sparse contrastive PCA (scPCA) procedure applies SPCA with minimal
+modifications \edit{to a pair of target and background datasets' contrastive 
+covariance matrix $\mathbf{C}_\gamma$}. The numerical solution to the SPCA 
+criterion of Equation \eqref{eq:spca} is obtained by the following
+alternating algorithm until convergence of the sparse loadings \citep{Zou2006},
+\edit{where $\mathbf{A}_{p\times k}$ is initialized as the matrix of loadings 
+corresponding to the $k$ leading principal components of $\mathbf{C}_\gamma$:}
 
-\textbf{For fixed} $\mathbf{A}$: For each $j$, let
-$Y_j \coloneqq \mathbf{C}_\gamma^{\frac{1}{2}}\alpha_j$. Then, the elastic net solution for
-the $j^{\text{th}}$ loading vector is
+\textbf{For fixed} $\mathbf{A}$:
+\edit{Relying on the results of Equation \ref{eq:cov_mat_spca}, the
+elastic net solution for the $j^{\text{th}}$ loading vector is
 \begin{equation*}
-  \beta_j^\star = \argmin_{\beta_j} \lVert Y_j - \mathbf{C}_\gamma^{\frac{1}{2}}
+  \beta_j^\star = \argmin_{\beta_j} \lVert \mathbf{C}_\gamma^{\frac{1}{2}}\alpha_j - \mathbf{C}_\gamma^{\frac{1}{2}}
   \beta_j \rVert_2^2 + \lambda_0 \lVert \beta_j \rVert_2^2 + \lambda_{1, j}
   \lVert \beta_j \rVert_1.
-\end{equation*}
+\end{equation*}}
 Generally, for ease of computation, $\lambda_{1, j} = \lambda_1$, for
 $j=1, \ldots, k$. The entries of the loading matrix $\mathbf{B}$ are independent of
 the choice for the $\ell_2$ penalty (ridge) parameter $\lambda_0$
-\citep{Zou2006}, existing only for numerical reasons to ensure the reconstruction of the sparse principal components. The ridge penalty is set to zero when
-$\mathbf{C}^{\frac{1}{2}}_\gamma$ is full rank; otherwise, a small constant
+\citep{Zou2006}, which is used only for numerical reasons. The ridge penalty is set to zero when
+$\mathbf{C}^{\frac{1}{2}}_\gamma$ is of full rank; otherwise, a small constant
 value is used to remedy issues of indeterminacy that arise when fitting the
 elastic net.
 
@@ -75,7 +75,7 @@ a cutoff of zero a natural choice for the thresholding operation.
 \subsection{Framework for Hyperparameter Tuning}\label{hyp_tune}
 
 The scPCA algorithm relies on two hyperparameters: the contrastive parameter $\gamma$ and the $\ell_1$ penalty parameter $\lambda_1$. To select the optimal combination of $\gamma$ and $\lambda_1$ from a grid of \textit{a priori} specified values, we propose to cluster the $n$ observations of the target dataset based on their first $k$ scPCs, selecting as optimal the combination $\{\gamma, \lambda_1\}$ producing the ``strongest'' cluster assignments. This framework casts the selection of $\{\gamma, \lambda_1\}$ in terms of a choice of clustering algorithm, distance metric (based on $\widetilde{\mathbf{C}}_{\gamma}$), and clustering strength criterion. For ease of application, we propose to select $\{\gamma, \lambda_1\}$ by maximization of the average silhouette width over clusterings of the reduced-dimension representation of the target data. This procedure implicitly requires the choice of a clustering algorithm, such as $k$-means~\citep{kmeans}, to be applied to the representation of the data in the first $k$ scPCs. Such methods require an appropriate choice for the number of clusters, which we contend will generally not be a limiting factor in the use of scPCA. Indeed, reasonable choices for the number of clusters can often be inferred in \textit{omics} settings from sample annotation variables accompanying the data or from previously available biological knowledge. In Section~\ref{results}, we empirically demonstrate that the results of the algorithm are robust to the choice of the number of clusters. Additionally, scPCA has no particular dependence on average silhouette width as a criterion, that is, alternative criteria for assessing clustering strength could be used when appropriate. %(e.g., when the data contains sub-clusters~\citep{Liu2010}).
-Naturally, this proposed hyperparameter tuning approach can be applied to cPCA by setting $\lambda_1$ to $0$.
+Naturally, this proposed hyperparameter tuning approach can be applied to cPCA by setting $\lambda_1$ to zero.
 
 To address concerns of overfitting and to avoid discovering non-generalizable patterns from the data, we propose the use of cross-validation. For a grid of \textit{a priori} specified contrastive parameters $\gamma$ and $\ell_1$ penalty parameters $\lambda_1$, \edit{$W$-fold} cross-validation may be performed as follows:
 \begin{enumerate}
@@ -87,11 +87,11 @@ To address concerns of overfitting and to avoid discovering non-generalizable pa
      background subsets; these pairs form the fold-specific \edit{validation sets}.
    \item Iteratively perform scPCA over the 
      observations of the target and
-     background data not contained in the validation set (i.e., the training set)
+     background data not contained in the validation set (i.e., the training sets),
      for each pair of contrastive parameters and $\ell_1$ penalty parameters in
      the hyperparameter grid.
   \item Project the target validation data onto the low-dimensional space using
-     the loading matrices obtained from the previous step.
+     the loading matrices obtained in the prior step.
   \item Compute a clustering strength criterion (e.g., average
   silhouette width) for a clustering of the target validation data with the \textit{a priori}
   specified number of clusters.
@@ -101,7 +101,7 @@ To address concerns of overfitting and to avoid discovering non-generalizable pa
   pair that maximizes the value of the criterion.
 \end{enumerate}
 
-\edit{We note two caveats of this cross-validation framework: (1) it increases the computation time, and (2) each fold is assumed to be representative of the process which generated the data. For large datasets and say 5 to 10 folds, (2) is not a grave concern. However, as the number of samples decreases, this assumption becomes less tenable. In such a situation, the non-cross-validated framework should be used, or the number of folds reduced. Examples and results are provided in Section \ref{cv_algo_example}.}
+\edit{We note two caveats of this cross-validation framework: (1) it increases the computation time, and (2) each fold is assumed to be representative of the process which generated the data. For large datasets and say 5 to 10 folds, (2) is not a grave concern; however, as the number of samples decreases, this assumption becomes less tenable. In such a situation, the non-cross-validated framework should be used, or the number of folds reduced. Examples and results are provided in Section~\ref{cv_algo_example}.}
 
 \subsection{Algorithm and Software Implementation}
 
@@ -114,7 +114,7 @@ the number of observations in the target and background data are not limiting
 factors. Indeed, these algorithms are applied to a $p \times p$
 contrastive covariance matrix, a function of the target and background covariance
 matrices. The computation time of these covariance matrices increases linearly in
-the number of observations and quadratically in the number of features. The
+the number of observations $n$ and quadratically in the number of features $p$. The
 methods' computational efficiency are therefore most impacted by the number of
 features and the size of the hyperparameter grid. A note on cPCA's and
 scPCA's running time is provided in Section \ref{run_time}, as is a comparison
