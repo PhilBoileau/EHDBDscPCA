@@ -2,13 +2,37 @@
 \usepackage{arxiv}
 \input{_preamble}
 \externaldocument{main}
-\begin{document}
+\newcommand{\sd}[1]{\textcolor{red}{***SD: #1}}
+
+\title{\textit{Supplementary Materials for}\\ Exploring High-Dimensional Biological Data with Sparse Contrastive Principal Component Analysis}
+
+\author{
+  Philippe Boileau \\
+  Graduate Group in Biostatistics,\\
+  University of California, Berkeley\\
+  \texttt{philippe\_boileau@berkeley.edu} \\
+  \And
+  Nima S.~Hejazi \\
+  Graduate Group in Biostatistics and\\
+  Center for Computational Biology,\\
+  University of California, Berkeley\\
+  \texttt{nhejazi@berkeley.edu} \\
+  \And
+  Sandrine Dudoit\\
+  Department of Statistics, \\
+  Division of Biostatistics, and\\
+  Center for Computational Biology,\\
+  University of California, Berkeley\\
+  \texttt{sandrine@stat.berkeley.edu} \\
+}
+
+\begin{document}\maketitle
 \beginsupplement
-\section*{Supplementary Information}
 
-\section{Algorithm for scPCA}\label{algo1}
+\newpage
+\section{Algorithm for scPCA}
 
-\begin{algorithm}[!htbp]
+\begin{algorithm}[!htbp]\label{algo1}
   \dontprintsemicolon
   %\setalgolined
   \linesnotnumbered
@@ -61,9 +85,9 @@
 
 
 \newpage
-\section{Algorithm for Cross-Validated scPCA}\label{algo2}
+\section{Algorithm for Cross-Validated scPCA}
 
-\begin{algorithm}[!htbp]
+\begin{algorithm}[!htbp]\label{algo2}
   \dontprintsemicolon
   %\setalgolined
   \linesnotnumbered
@@ -101,9 +125,9 @@
       \forall
       w,w' \in \{1, \ldots, W\}$). Denote the corresponding training sets by
   $\mathcal{T}_w^y = \{1, \ldots, m\} \setminus \mathcal{W}_w^y$. Denote by
-$\mathbf{X}_{\mathcal{T}_w^x}$ the $\left(n - \lvert \mathcal{T}_w^x \rvert\right)
+$\mathbf{X}_{\mathcal{T}_w^x}$ the $\lvert \mathcal{T}_w^x \rvert\
   \times p$ submatrix of $\mathbf{X}$ for training set $\mathcal{T}_w^x$ and by
-$\mathbf{Y}_{\mathcal{T}_w^y}$ the $\left(m - \lvert \mathcal{T}_w^y \rvert\right)
+$\mathbf{Y}_{\mathcal{T}_w^y}$ the $\lvert \mathcal{T}_w^y \rvert
   \times p$ submatrix of $\mathbf{Y}$ for training set $\mathcal{T}^y_w$. Define similarly
   $\mathbf{X}_{\mathcal{W}_w^x}$ and $\mathbf{Y}_{\mathcal{W}_w^y}$ for the validation
   sets. Note that $\mathbf{Y}_{\mathcal{W}_w^y}$ is defined explicitly solely to
@@ -145,22 +169,24 @@ $\mathbf{Y}_{\mathcal{T}_w^y}$ the $\left(m - \lvert \mathcal{T}_w^y \rvert\righ
 
 \newpage
 
-\section{Contrastive Parameter Intuition}
+\section{Intuition for the Contrastive Parameter $\gamma$}
 
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/cpca_example_plot}
     \caption{
     {\em Effect of contrastive parameter for cPCA.}
-    cPCA as implemented by \citet{Abid2018} was applied to a simulated dataset of $n=400$ observations, split across 4 groups, with $p=30$ variables. The first 10 variables are distributed as $N(0, 10)$ for all observations. Variables 11
-    through 20 are distributed as $N(0, 1)$ for Groups 1 an 2, and as $N(3, 1)$
+    cPCA as implemented by \citet{Abid2018} was applied to a simulated dataset
+    of $n=400$ observations, split across 4 groups, with $p=30$ variables. The
+    first 10 variables are distributed as $N(0, 10)$ for all observations. Variables 11  through 20 are distributed as $N(0, 1)$ for Groups 1 an 2,
+    and as $N(3, 1)$
     for Groups 3 and 4. Variables 21 through 30 are distributed as $N(-3, 1)$
     for Groups 1 and 3, and as $N(0, 1)$ for Groups 2 and 4. cPCA also takes
     as input a background dataset of $m=400$ observations, with $p=30$
     variables, where the first 10 variables are distributed as $N(0, 10)$, the
     following 10 as $N(0, 3)$, and the remaining 10 as $N(0, 1)$. The results
     of cPCA are then presented for eight increasing values of the contrastive
-    parameter $\gamma$, selected using the technique described by \citet{Abid2018}. For the smaller values of the contrastive parameter, the
+    parameter $\gamma$ from among 40 loagrithmically spaced values between 0.1 and 100, selected using the semi-automated technique described by \citet{Abid2018}. For the smaller values of the contrastive parameter, the
     noise contained in the first 10 variables of the target data dominates the
     signal contained in variables 11 through 30. As the contrastive parameter
     increases, the signal in the target data set is unmasked. However, once the
@@ -176,17 +202,17 @@ $\mathbf{Y}_{\mathcal{T}_w^y}$ the $\left(m - \lvert \mathcal{T}_w^y \rvert\righ
 
 \newpage
 
-\section{Simulated Data}\label{sup_sim}
+\section{Simulated scRNA-seq Data}\label{sup_sim}
 
 See Section 3.1 %\ref{sim_scRNA-seq}
-for information on the simulation model and dataset. cPCA was applied to the dataset using the non-cross-validated hyperparameter tuning framework. The $\ell_1$ penalty parameter was set to 0, and the vector of possible contrastive parameters consisted of 40 logarithmically spaced values between 0.1 and 1,000. scPCA was applied in the same manner as cPCA, though the vector of potential $\ell_1$ penalty parameters consisted of 20 equidistant values between 0.05 and 1. The \texttt{Rtsne R} package was used to create the t-SNE embedding. Two initializations were generated, that is with and without an initial application of PCA to the simulated data. The embedding employing the initial PCA step retained the 50 leading principal components. For each initialization, the remaining parameters were set to their defaults, as done by \citet{Becht2019}, e.g., \texttt{perplexity = 30} and \texttt{max\_iter = 1000}. The \texttt{theta} parameter was set to \texttt{0} so that exact t-SNE was performed. The embedding produced using the PCA initialization was qualitatively better than that without. Therefore, it was in Figure \ref{fig:sim} of this manuscript. The \texttt{umap} \texttt{R} package was used to generate the UMAP embedding. As in the quantitative analysis of UMAP performed by \citet{Becht2019}, \texttt{min\_dist} was set to \texttt{0.02}, \texttt{nearest\_neighbors} was set to \texttt{30}, and the Euclidean distance was used as a metric. The SIMLR embedding was produced with a \texttt{k} of 10, as recommended in \citep{Wang2017}, and setting the number of pre-specified clusters to 2.
+for information on the simulation model and dataset. cPCA was applied to the dataset using the non-cross-validated hyperparameter tuning framework. The $\ell_1$ penalty parameter was set to 0, and the vector of possible contrastive parameters consisted of 40 logarithmically spaced values between 0.1 and 1,000. scPCA was applied in the same manner as cPCA, though the vector of potential $\ell_1$ penalty parameters consisted of 20 equidistant values between 0.05 and 1. The \texttt{Rtsne R} package was used to create the t-SNE embedding. Two initializations were generated, that is, with and without an initial application of PCA to the simulated data. The embedding employing the initial PCA step retained the 50 leading principal components. For each initialization, the remaining parameters were set to their defaults, as done by \citet{Becht2019}, e.g., \texttt{perplexity = 30} and \texttt{max\_iter = 1000}. The \texttt{theta} parameter was set to \texttt{0} so that exact t-SNE was performed. The embedding produced using the PCA initialization was qualitatively better than that without. Therefore, it is used in Figure \ref{fig:sim} of this manuscript. The \texttt{umap} \texttt{R} package was used to generate the UMAP embedding. As in the quantitative analysis of UMAP performed by \citet{Becht2019}, \texttt{min\_dist} was set to \texttt{0.02}, \texttt{nearest\_neighbors} was set to \texttt{30}, and the Euclidean distance was used as a metric. The SIMLR was produced with a \texttt{k} of 10, as recommended in \citep{Wang2017}, and setting the number of pre-specified clusters to 2.
 
 
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/sim_de_genes}
     \caption{{\em Simulated scRNA-seq data: Differential expression.}
-    The 98 differentially expressed genes in the simulated target dataset are ranked in decreasing order of their absolute level of differential expression between groups. In the \textit{Splatter} framework, genes are differentially expressed between groups by way of a group-specific multiplicative factor. Thus, the level of differential expression of any gene between two groups may be computed as the absolute value of the difference between each groups multiplicative factor. We find that all 20 of the genes with non-zero entries in scPCA's first loading vector, highlighted in green, are among the most differentially expressed.}
+    The 98 differentially expressed genes in the simulated target dataset are ranked in decreasing order of their absolute level of differential expression between groups. In the \textit{Splatter} framework, genes are differentially expressed between groups by way of a group-specific multiplicative factor. Thus, the level of differential expression of any gene between two groups may be computed as the absolute value of the difference between each group's multiplicative factor. We find that all 20 of the genes with non-zero entries in scPCA's first loading vector, highlighted in green, are among the most differentially expressed.}
     \label{fig:sim_de_genes}
 \end{figure}
 
@@ -194,7 +220,7 @@ for information on the simulation model and dataset. cPCA was applied to the dat
     \centering
     \includegraphics[width=0.9\textwidth]{figures/technical_effect_removal_sim}
     \caption{{\em Simulated scRNA-seq data: Average silhouette width comparison.}
-    Methods are in decreasing order of ability to remove unwanted technical variation. scPCA produces the densest biological clusters with the least amount of technical noise. The ZINB-WaVE method, when taking into account the batch effect, has a similar performance to scPCA with respect to the removal of unwanted effects, though the biological clusters it produces have lower average silhouette widths. Though cPCA produces denser biological clusters than ZINB-WaVE, it fails to completely remove the batch effect. The remaining methods are unable to disentangle the biological and technical effects. 
+    Methods are displayed in decreasing order of ability to remove unwanted technical variation, as measured by the average silhouette width. scPCA produces the densest biological clusters with the least amount of technical noise. The ZINB-WaVE method, when taking into account the batch effect, has a similar performance to scPCA with respect to the removal of unwanted effects, though the biological clusters it produces have lower average silhouette widths. Though cPCA produces denser biological clusters than ZINB-WaVE, it fails to completely remove the batch effect. The remaining methods are unable to disentangle the biological and technical effects. 
     }
     \label{fig:ave_sil_widths}
 \end{figure}
@@ -203,7 +229,7 @@ for information on the simulation model and dataset. cPCA was applied to the dat
     \centering
     \includegraphics[width=0.9\textwidth]{figures/simulated_SIMLR.png}
     \caption{
-    {\em Simulated scRNA-seq data: SIMLR embedding.}
+    {\em Simulated scRNA-seq data: SIMLR.}
      SIMLR's two-dimensional embedding produces dense clusters that nearly perfectly split cells into two biologically meaningful groups. However, upon close inspection -- and contrary to what the average silhouette widths suggest -- the batch effect is not removed from the biological groups. Because the reported average silhouette widths misrepresent the method's ability to remove unwanted variation in the data, its results were not included in Figure \ref{fig:ave_sil_widths}.}
     \label{fig:simulated_SIMLR}
 \end{figure}
@@ -213,7 +239,7 @@ for information on the simulation model and dataset. cPCA was applied to the dat
 \section{Dengue Microarray Data}\label{sup_dengue}
 
 See Section 3.2 %\ref{dengue_data}
-for information on the data. cPCA and scPCA were fit using the non-cross-validated hyperparameter tuning framework. Both methods considered a vector of 40 logarithmically spaced values between 0.1 and 1,000 as potential contrastive parameters. scPCA also used a vector of 20 equidistant values between 0.05 and 1 as potential $\ell_1$ penalty parameters. As with the simulated data, two t-SNE embeddings were generated: one with an initial PCA step (retaining the first 50 principal components) and one without. Due to the small sample size, the \texttt{perplexity} variable was set to 8. The remaining hyperparameters were set to their defaults, with the exception of \texttt{theta} which was set to 0. Both embeddings were qualitatively identical, and so only that which does not require the initial dimensionality reduction through PCA is presented in this manuscript. The qualitatively best UMAP embedding was found with the \texttt{n\_neighbors} parameter set to 15 and the \texttt{min\_dist} parameter set to 0.2. These parameter values are inspired from those used by \citet{Becht2019}, though the type of data considered are not identical.
+for information on the data. cPCA and scPCA were fit using the non-cross-validated hyperparameter tuning framework. Both methods considered a vector of 40 logarithmically spaced values between 0.1 and 1,000 as potential contrastive parameters. scPCA also used a vector of 20 equidistant values between 0.05 and 1 as potential $\ell_1$ penalty parameters. As with the simulated data, two t-SNE embeddings were generated: one with an initial PCA step (retaining the first 50 principal components) and one without. Due to the small sample size, the \texttt{perplexity} parameter was set to 8. The remaining hyperparameters were set to their defaults, with the exception of \texttt{theta} which was set to 0. Both embeddings were qualitatively identical, and so only that which does not require the initial dimensionality reduction through PCA is presented in this manuscript. The qualitatively best UMAP embedding was found with the \texttt{n\_neighbors} parameter set to 15 and the \texttt{min\_dist} parameter set to 0.2. These parameter values are inspired from those used by \citet{Becht2019}, though the type of data considered are not identical.
 
 \begin{figure}[!htbp]
     \centering
@@ -308,16 +334,16 @@ for information on the data. cPCA and scPCA were fit using the non-cross-validat
   \hline
    Gene Set Name & Description & Genes in Overlap & $p$-value & FDR $q$-value \\ 
   \hline
-  GO\_DEFENSE\_RESPONSE & Reactions, triggered in response to the presence of a foreign body or the occurrence of an injury, which result in restriction of damage to the organism attacked or prevention/recovery from the infection caused by the attack. & 13 & 1.12 e-8 & 8.20 e-5 \\
+  GO\_DEFENSE\_RESPONSE & Reactions, triggered in response to the presence of a foreign body or the occurrence of an injury, which result in restriction of damage to the organism attacked or prevention/recovery from the infection caused by the attack. & 13 & 1.12 e-8 & 8.2 e-5 \\
   GO\_RESPONSE\_TO\_CYTOKINE & Any process that results in a change in state or activity of a cell or an organism (in terms of movement, secretion, enzyme production, gene expression, etc.) as a result of a cytokine stimulus. & 10 & 3.15 e-7 & 1.16 e-3 \\
   GO\_MITOTIC\_CELL\_CYCLE\_CHECKPOINT & A cell cycle checkpoint that ensures accurate chromosome replication and segregation by preventing progression through a mitotic cell cycle until conditions are suitable for the cell to proceed to the next stage. & 5 & 8.39 e-7 & 2.06 e-3 \\
-  GO\_CYTOKINE\_MEDIATED\_SIGNALING\_PATHWAY & A series of molecular signals initiated by the binding of a cytokine to a receptor on the surface of a cell, and ending with regulation of a downstream cellular process, e.g. transcription. & 8 & 1.38 e-6 & 2.40 e-3 \\
+  GO\_CYTOKINE\_MEDIATED\_SIGNALING\_PATHWAY & A series of molecular signals initiated by the binding of a cytokine to a receptor on the surface of a cell, and ending with regulation of a downstream cellular process, e.g. transcription. & 8 & 1.38 e-6 & 2.4 e-3 \\
   GO\_PROTEIN\_LOCALIZATION\_TO\_CHROMOSOME\_ME\_CENTROMERIC\_REGION & Any process in which a protein is transported to, or maintained at, the centromeric region of a chromosome. & 3 & 1.63 e-6 & 2.4 e-3 \\
   GO\_CELL\_CYCLE\_CHECKPOINT & A cell cycle process that controls cell cycle progression by monitoring the integrity of specific cell cycle events. A cell cycle checkpoint begins with detection of deficiencies or defects and ends with signal transduction. & 5 & 3.15 e-6 & 3.86 e-3 \\
   GO\_POSITIVE\_REGULATION\_OF\_VASOCONSTRICRICTION & Any process that activates or increases the frequency, rate or extent of vasoconstriction. & 3 & 4.74 e-6 & 4.97 e-3 \\
   GO\_NEGATIVE\_REGULATION\_OF\_METAPHASE\_AN\newline\_ANAPHASE\_TRANSITION\newline\_OF\_CELL\_CYCLE & Any process that stops, prevents or reduces the frequency, rate or extent of metaphase/anaphase transition of cell cycle. & 3 & 8.15 e-6 & 6.58 e-3 \\
-  GO\_MITOTIC\_CELL\_CYCLE & Progression through the phases of the mitotic cell cycle, the most common eukaryotic cell cycle, which canonically comprises four successive phases called G1, S, G2, and M and includes replication of the genome and the subsequent segregation of chromosomes into daughter cells. In some variant cell cycles nuclear replication or nuclear division may not be followed by cell division, or G1 and G2 phases may be absent. & 8 & 8.60 e-6 & 6.58 e-3 \\
-  GO\_INFLAMMATORY\_RESPONSE & The immediate defensive reaction (by vertebrate tissue) to infection or injury caused by chemical or physical agents. The process is characterized by local vasodilation, extravasation of plasma into intercellular spaces and accumulation of white blood cells and macrophages. & 7 & 9.30 e-6 & 6.58 e-3 \\
+  GO\_MITOTIC\_CELL\_CYCLE & Progression through the phases of the mitotic cell cycle, the most common eukaryotic cell cycle, which canonically comprises four successive phases called G1, S, G2, and M and includes replication of the genome and the subsequent segregation of chromosomes into daughter cells. In some variant cell cycles nuclear replication or nuclear division may not be followed by cell division, or G1 and G2 phases may be absent. & 8 & 8.6 e-6 & 6.58 e-3 \\
+  GO\_INFLAMMATORY\_RESPONSE & The immediate defensive reaction (by vertebrate tissue) to infection or injury caused by chemical or physical agents. The process is characterized by local vasodilation, extravasation of plasma into intercellular spaces and accumulation of white blood cells and macrophages. & 7 & 9.3 e-6 & 6.58 e-3 \\
  \hline
 \end{tabular}
 \label{tab:gsea_dengue}
@@ -349,13 +375,13 @@ for information on the data. cPCA and scPCA were fit using the non-cross-validat
 \section{Leukemia Patient scRNA-seq Data}\label{sup_aml}
 
 See Section 3.3 %\ref{leukemia_data}
-for information on the data. cPCA and scPCA were fit to both patients' data using the non-cross-validated hyperparameter tuning framework. Both methods considered a vector of 40 logarithmically spaced values between 0.1 and 1,000 as potential contrastive parameters. scPCA considered 20 logarithmically spaced values between $1e-9$ and $1$ as potential $\ell_1$ penalty parameters. Two t-SNE embeddings were produced per patient: one with an initial dimension reduction step performed with PCA (retaining the 50 leading principal components), and one without. The remaining parameters for each embedding were set to their defaults, except for \texttt{theta} which was set to 0. UMAP was performed with its default parameters, except for \texttt{n\_neighbors} and \texttt{min\_dist} which were set to 30 and 0.02, respectively. These values match those used by \citet{Becht2019}. The SIMLR embeddings were produced with \texttt{k = 30}, as recommended in \citet{Wang2017} for datasets of this size. The number of pre-specified clusters was set to 2.
+for information on the data. cPCA and scPCA were fit to both patients' data using the non-cross-validated hyperparameter tuning framework. Both methods considered a vector of 40 logarithmically spaced values between 0.1 and 1,000 as potential contrastive parameters. scPCA considered 20 logarithmically spaced values between $1e-9$ and $1$ as potential $\ell_1$ penalty parameters. Two t-SNE embeddings were produced per patient: one with an initial dimension reduction step performed with PCA (retaining the 50 leading principal components) and one without. The remaining parameters for each embedding were set to their defaults, except for \texttt{theta} which was set to 0. UMAP was performed with its default parameters, except for \texttt{n\_neighbors} and \texttt{min\_dist} which were set to 30 and 0.02, respectively. These values match those used by \citet{Becht2019}. The SIMLR embeddings were produced with \texttt{k = 30}, as recommended in \citet{Wang2017} for datasets of this size. The number of pre-specified clusters was set to 2.
 
 \begin{figure}[!htbp]
     \centering
     \includegraphics[width=0.9\textwidth]{figures/aml035_SIMLR.png}
     \caption{
-    {\em AML Patient 035 scRNA-seq data: SIMLR embedding.} SIMLR fails to produce an informative two-dimensional embedding of the patient's BMMCs. Although a number of dense clusters are formed in the center of the figure, the spread of observations around these clusters renders the visualization uninterpretable.}
+    {\em AML Patient 035 scRNA-seq data: SIMLR.} SIMLR fails to produce an informative two-dimensional embedding of the patient's BMMCs. Although a number of dense clusters are formed in the center of the figure, the spread of observations around these clusters renders the visualization uninterpretable.}
     \label{fig:SIMLR_aml_035}
 \end{figure}
 
@@ -369,13 +395,13 @@ The Broad Institute's online gene set enrichment analysis tool was used to ident
   \hline
   GO\_ESTABLISHMENT\_OF\_PROTEIN\_LOCALIZATIATION\_TO\_ENDOPLASMIC\_RETICULUM & The directed movement of a protein to a specific location in the endoplasmic reticulum. & 33 & 9.82 e-57 & 7.22 e-53 \\ 
   GO\_COTRANSLATIONAL\_PROTEIN\_TARGETING\_TG\_TO\_MEMBRANE & The targeting of proteins to a membrane that occurs during translation. The transport of most secretory proteins, particularly those with more than 100 amino acids, into the endoplasmic reticulum lumen occurs in this manner, as does the import of some proteins into mitochondria. & 32 & 2.09 e-56 & 7.66 e-53 \\ 
-  GO\_TRANSLATIONAL\_INITIATION & The process preceding formation of the peptide bond between the first two amino acids of a protein. This includes the formation of a complex of the ribosome, mRNA or circRNA, and an initiation complex that contains the first aminoacyl-tRNA. & 36 & 1.00 e-54 & 2.46 e-51 \\
-  GO\_NUCLEAR\_TRANSCRIBED\_MRNA\_CATABOLIC\_IC\_PROCESS\_NONSENSE\_MEDIATED\_DECAY & The nonsense-mediated decay pathway for nuclear-transcribed mRNAs degrades mRNAs in which an amino-acid codon has changed to a nonsense codon; this prevents the translation of such mRNAs into truncated, and potentially harmful, proteins. & 32 & 4.32 e-54 & 7.94 e-51 \\
+  GO\_TRANSLATIONAL\_INITIATION & The process preceding formation of the peptide bond between the first two amino acids of a protein. This includes the formation of a complex of the ribosome, mRNA or circRNA, and an initiation complex that contains the first aminoacyl-tRNA. & 36 & 1 e-54 & 2.46 e-51 \\
+  GO\_NUCLEAR\_TRANSCRIBED\_MRNA- \_CATABOLIC\_IC\_PROCESS\_NONSENSE\_MEDIATED\_DECAY & The nonsense-mediated decay pathway for nuclear-transcribed mRNAs degrades mRNAs in which an amino-acid codon has changed to a nonsense codon; this prevents the translation of such mRNAs into truncated, and potentially harmful, proteins. & 32 & 4.32 e-54 & 7.94 e-51 \\
   GO\_PROTEIN\_LOCALIZATION\_TO\_ENDOPLASMICMIC\_RETICULUM & A process in which a protein is transported to, or maintained in, a location within the endoplasmic reticulum. & 33 & 1.45 e-53 & 2.13 e-50 \\
-  GO\_VIRAL\_GENE\_EXPRESSION & A process by which a viral gene is converted into a mature gene product or products (proteins or RNA). This includes viral transcription, processing to produce a mature RNA product, and viral translation. & 34 & 7.20 e-51 & 8.82 e-48 \\
+  GO\_VIRAL\_GENE\_EXPRESSION & A process by which a viral gene is converted into a mature gene product or products (proteins or RNA). This includes viral transcription, processing to produce a mature RNA product, and viral translation. & 34 & 7.2 e-51 & 8.82 e-48 \\
   GO\_PROTEIN\_TARGETING\_TO\_MEMBRANE & The process of directing proteins towards a membrane, usually using signals contained within the protein. & 34 & 2.71 e-50 & 2.85 e-47 \\
   GO\_NUCLEAR\_TRANSCRIBED\_MRNA\_CATABOLIC\newline\_IC\_PROCESS & The chemical reactions and pathways resulting in the breakdown of nuclear-transcribed mRNAs in eukaryotic cells. & 33 & 1.22 e-47 & 1.12 e-44 \\
-  GO\_ESTABLISHMENT\_OF\_PROTEIN\_LOCALIZATIATION\_TO\_MEMBRANE & The directed movement of a protein to a specific location in a membrane. & 36 & 5.88 e-46 & 4.80 e-43 \\
+  GO\_ESTABLISHMENT\_OF\_PROTEIN\_LOCALIZATIATION\_TO\_MEMBRANE & The directed movement of a protein to a specific location in a membrane. & 36 & 5.88 e-46 & 4.8 e-43 \\
   GO\_PROTEIN\_TARGETING & The process of targeting specific proteins to particular regions of the cell, typically membrane-bounded subcellular organelles. Usually requires an organelle specific protein sequence motif. & 37 & 2.61 e-43 & 1.92 e-40 \\
  \hline
 \end{tabular}
@@ -387,7 +413,7 @@ The Broad Institute's online gene set enrichment analysis tool was used to ident
   \centering
   \includegraphics[width=0.9\textwidth]{figures/aml027_results}
   \caption{
-  {\em AML Patient 027 scRNA-seq data.} The two-dimensional embeddings of the patient's BMMCs produced by PCA, ZINB-WaVE, t-SNE, UMAP, cPCA, and scPCA. cPCA and scPCA produce two-dimensional representations that distinguish between the pre- and post-transplant cells of Patient 027. Although cPCA's embedding contains denser clusters, scPCA's clusters are more distinct --- though they are oddly shaped. This is the result of sparsity: the scPCA embedding is produced with the count data of only five genes.}
+  {\em AML Patient 027 scRNA-seq data.} Two-dimensional embeddings of the patient's BMMCs produced by PCA, ZINB-WaVE, t-SNE, UMAP, cPCA, and scPCA. cPCA and scPCA produce two-dimensional representations that distinguish between the pre- and post-transplant cells of Patient 027. Although cPCA's embedding contains denser clusters, scPCA's clusters are more distinct -- though they are oddly shaped. This is the result of sparsity: the scPCA embedding is produced with the count data of only five genes.}
   \label{fig:comp_leuk_pat2}
 \end{figure}
 
@@ -395,7 +421,7 @@ The Broad Institute's online gene set enrichment analysis tool was used to ident
     \centering
     \includegraphics[width=0.9\textwidth]{figures/aml027_SIMLR.png}
     \caption{
-    {\em AML Patient 027 scRNA-seq data: SIMLR embedding.} As with AML Patient 035's data, SIMLR produces an uninterpretable representation of the patient's BMMCs.}
+    {\em AML Patient 027 scRNA-seq data: SIMLR.} As with AML Patient 035's data, SIMLR produces an uninterpretable representation of the patient's BMMCs.}
     \label{fig:SIMLR_aml_027}
 \end{figure}
 
@@ -507,7 +533,7 @@ PCA proved incapable of distinguishing between the biological groups of interest
 
 \section{Cross-Validated cPCA and scPCA}\label{cv_algo_example}
 
-The cross-validated (CV) versions of cPCA and scPCA (as implemented in Algorithm~\ref{algo2}) were applied to the datasets presented in the main paper and in the supplement. The hyperparameter grids used by each method are the same as those employed for their non-cross-validated counterparts. See Sections~\ref{sup_sim},~\ref{sup_dengue},~\ref{sup_aml}, and \ref{sup_mice} for details. 5-fold CV was applied to the simulated scRNA-seq data, mouse protein expression data, and AML patient scRNA-seq data (Figures~\ref{fig:cv_sim},~\ref{fig:cv_mice},~\ref{fig:cv_aml035},~\ref{fig:cv_aml027}), and 3-fold CV was applied to the dengue microarray gene expression data (Figure \ref{fig:cv_dengue}). A reduced number of folds was used on the latter dataset since it possessed much fewer observations than the others. For each dataset, the CV-cPCA and CV-scPCA embeddings closely resemble --- and are in some cases identical to --- their non-cross-validated counterparts.
+The cross-validated (CV) versions of cPCA and scPCA (as implemented in Algorithm~\ref{algo2}) were applied to the datasets presented in the main paper and in the supplement. The hyperparameter grids used by each method are the same as those employed for their non-cross-validated counterparts. See Sections~\ref{sup_sim},~\ref{sup_dengue},~\ref{sup_aml}, and \ref{sup_mice} for details. Five-fold CV was applied to the simulated scRNA-seq data, mouse protein expression data, and AML patient scRNA-seq data (Figures~\ref{fig:cv_sim},~\ref{fig:cv_mice},~\ref{fig:cv_aml035}, and ~\ref{fig:cv_aml027}), and 3-fold CV was applied to the dengue microarray gene expression data (Figure \ref{fig:cv_dengue}). A reduced number of folds was used on the latter dataset since it possessed much fewer observations than the others. For each dataset, the CV-cPCA and CV-scPCA embeddings closely resemble -- and are in some cases identical to -- their non-cross-validated counterparts.
 
 \begin{figure}
     \centering
@@ -519,14 +545,14 @@ The cross-validated (CV) versions of cPCA and scPCA (as implemented in Algorithm
 \begin{figure}
     \centering
     \includegraphics[width = \textwidth]{figures/mice_cv_results.png}
-    \caption{\em{CV-cPCA and CV-scPCA on mice protein expression data.}}
+    \caption{\em{CV-cPCA and CV-scPCA on mouse protein expression data.}}
     \label{fig:cv_mice}
 \end{figure}
 
 \begin{figure}
     \centering
     \includegraphics[width = \textwidth]{figures/dengue_cv_results.png}
-    \caption{\em{CV-cPCA and CV-scPCA on dengue microarray gene expression data.}}
+    \caption{\em{CV-cPCA and CV-scPCA on dengue microarray data.}}
     \label{fig:cv_dengue}
 \end{figure}
 
@@ -548,19 +574,19 @@ The cross-validated (CV) versions of cPCA and scPCA (as implemented in Algorithm
 \section{Running Time Comparison}\label{run_time}
 
 The running times of PCA, t-SNE, UMAP, cPCA, scPCA, ZINB-WaVE, and SIMLR were recorded on the simulated scRNA-seq data from Section \ref{sim_scRNA-seq} and on the scRNA-seq data of AML Patient 035 from Section \ref{leukemia_data}.
-If a method's software implementation offered the option to parallelize, four cores were used. The hyperparameters used by the methods on each dataset are identical to those described in their respective sections of the supplement, that is Sections~\ref{sup_sim} and \ref{sup_aml}. The \texttt{microbenchmark R} package was used to track the methods' running times. Comparisons are presented in Figures~\ref{fig:rt_sim_sc_rna-seq} and \ref{fig:rt_aml035}.
+If a method's software implementation offered the option to parallelize, four cores were used. The hyperparameters used by the methods on each dataset are identical to those described in their respective sections of the supplement, that is Sections~\ref{sup_sim} and \ref{sup_aml}. The \texttt{microbenchmark R} package was used to track the methods' running times. The comparison is presented in Figures~\ref{fig:rt_sim_sc_rna-seq} and \ref{fig:rt_aml035}.
 
-The iterative algorithm presented in Section 2 is computationally inefficient. However, the scPCA framework is not dependent on \citet{Zou2006}'s optimization procedure; other solutions to the SPCA criterion (Equation \ref{eq:spca}) can be employed to sparsify the loadings of contrastive covariance matrices. Indeed, more efficient algorithms exist.
+We note that the iterative algorithm presented in Section 2 is computationally inefficient. However, the scPCA framework is not dependent on \citet{Zou2006}'s optimization procedure; other solutions to the SPCA criterion (Equation \ref{eq:spca}) can be employed to sparsify the loadings of contrastive covariance matrices. Indeed, more efficient algorithms exist.
 
-In particular, recent work by \citet{erichson2018sparse} provides a scalable algorithm by reformulating the SPCA criterion (Equation 3) as a value function optimization problem. Instead of requiring an iterative routine to update $\mathbf{B}$ of the alternating algorithm presented in Section~\ref{method}, a single operator is used. This procedure can be sped up further through the use of randomized linear algebra methods to compute $\mathbf{A}$ for fixed $\mathbf{B}$.
+In particular, recent work by \citet{erichson2018sparse} provides a scalable algorithm by reformulating the SPCA criterion (Equation (3)) as a value function optimization problem. Instead of requiring an iterative routine to update $\mathbf{B}$ of the alternating algorithm presented in Section~\ref{method}, a single operator is used. This procedure can be sped up further through the use of randomized linear algebra methods to compute $\mathbf{A}$.
 
-These sparsification methods were recently included in the \texttt{scPCA R} package, and the distribution of their running times are included in Figures~\ref{fig:rt_sim_sc_rna-seq} and \ref{fig:rt_aml035}. Using these recently developed methods to solve the SPCA step, the scPCA algorithm's running time is decreased by over an order of magnitude on both datasets. Given that the hyperparameter tuning framework is embarrassingly parallel, one can expect even faster computation times when more cores are employed.
+These sparsification methods were recently included in the \texttt{scPCA R} package, and the distribution of their running times are included in Figures~\ref{fig:rt_sim_sc_rna-seq} and \ref{fig:rt_aml035}. Using these recently developed methods to solve the SPCA step, the scPCA algorithm's running time is decreased by over an order of magnitude on both datasets. Its running time is similar to that of competing methods when using four cores. Given that the hyperparameter tuning framework is embarrassingly parallel, one can expect even faster computation times when more cores are employed.
 
 \begin{figure}
     \centering
     \includegraphics[width = 0.9\textwidth]{figures/rt_analsysis_sim_data.png}
     \caption{
-    {\em Running time comparison: Simulated scRNA-seq data.} Each method was applied to the data five times. Note that \textit{scPCA (var. proj.)} and \textit{scPCA (rand. var. proj.)} correspond to the scPCA algorithms relying on the SPCA procedures detailed in \citet{erichson2018sparse}'s recent work, the latter being being the procedure which relies on randomized techniques. \textit{scPCA (iterative)} pertains to the scPCA method that uses the SPCA algorithm detailed in \citet{Zou2006}. The median running time of each method is reported. The most general of the dimensionality reduction methods, PCA, t-SNE, and UMAP, were at least an order of magnitude faster than all other methods. The remaining method's running time's were similar, with the exception of the much slower \textit{scPCA (iterative)}.
+    {\em Running time comparison: Simulated scRNA-seq data.} Each method was applied to the data five times. Note that \textit{scPCA (var. proj.)} and \textit{scPCA (rand. var. proj.)} correspond to the scPCA algorithms relying on the SPCA procedures detailed in \citet{erichson2018sparse}'s recent work, the latter being being the procedure which relies on randomized techniques. \textit{scPCA (iterative)} pertains to the scPCA method that uses the SPCA algorithm detailed in \citet{Zou2006}. The median running time of each method is reported. The most general of the dimensionality reduction methods, PCA, t-SNE, and UMAP, were at least an order of magnitude faster than all other methods. The remaining method's running times were similar, with the exception of the much slower \textit{scPCA (iterative)}.
     }
     \label{fig:rt_sim_sc_rna-seq}
 \end{figure}
@@ -569,7 +595,7 @@ These sparsification methods were recently included in the \texttt{scPCA R} pack
     \centering
     \includegraphics[width = 0.9\textwidth]{figures/rt_analsysis_aml035.png}
     \caption{
-    {\em Running time comparison: AML Patient 035 scRNA-seq data.} Each method was applied to the data three times. The median running time of each method is reported. Compared to the smaller dataset, the contrastive methods presented in this manuscript are competitive with the more general dimensionality reduction methods. Indeed, cPCA's running time is similar to that of UMAP, and the scPCA algorithm relying on random numerical methods for sparsification is faster than t-SNE.
+    {\em Running time comparison: AML Patient 035 scRNA-seq data.} Each method was applied to the data three times. The median running time of each method is reported. Compared to the smaller dataset, the contrastive methods presented in the manuscript are competitive with the more general dimensionality reduction methods. Indeed, cPCA's running time is similar to that of UMAP, and the scPCA algorithm relying on random numerical methods for sparsification is faster than t-SNE.
     }
     \label{fig:rt_aml035}
 \end{figure}
