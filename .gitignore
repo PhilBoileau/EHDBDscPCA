@@ -324,3 +324,7 @@ TSWLatexianTemp*
 
 # Files that are too big
 */bmmc_simlr_035.rds
+
+# do not include files/folders needed for resubmission
+EHDBDscPCA_revison-letter.pdf
+appendix_figures/
