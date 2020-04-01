@@ -5,4 +5,5 @@
 
 This repository provides the code to reproduce the analyses presented in
 EHDBDscPCA, as well as the `LaTeX` files needed to generate the
-manuscript.
+manuscript. This manuscript has been published in
+[Bioinformatics](https://doi.org/10.1093/bioinformatics/btaa176).
